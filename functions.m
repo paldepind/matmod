@@ -1,4 +1,4 @@
-1;
+
 
 function [n, S, USS, SSD, mean, variance] = commonStuff(obs)
   n = length (obs);
@@ -20,13 +20,30 @@ function obsInfo (obs)
   printf ("Estimeret varians\nsigma^2 <- s^2 = SSD / (n - 1) = %d\n", variance);
 endfunction
 
+function calcStuff (n, S, USS)
+  mean = S / n;
+  SSD = USS - S^2 / n; # sum of squares of deviations
+  variance = SSD / (n - 1);
+  f = n - 1; # degrees of freedom
+  sigmaLower = (f * variance) / chi2inv(0.975, f);
+  sigmaUpper = (f * variance) / chi2inv(0.025, f);
+  printf ("Estimeret middelværdi\nmu <- x. = S / n = %d\n", mean);
+  printf ("95 konfidensinterval for \\mu\n");
+  printf ("c_{95}(mu) = x. += t_{0.975}(f) sqrt(s^2/n) = %d += %d\n",
+         mean, tinv(0.975, f));
+  printf ("Estimeret varians\nsigma^2 <- s^2 = SSD / (n - 1) = %d\n", variance);
+  printf ("Konfidensinterval for sigma^2\n");
+  printf ("c_95(sigma^2) = [f s^2 / chi^2_{0.975}(f), f s^2 / chi^2_{0.025}(f)] = [%d, %d]\n",
+          sigmaLower, sigmaUpper);
+endfunction
+
 # Tager to observationsrækker og printer info om differensen mellem dem
 function obsDiffInfo(obs1, obs2)
   printf ("*** Info omkring differens ***\n");
   [n1, S1, USS1, SSD1, mean1, variance1] = commonStuff(obs1);
   [n2, S2, USS2, SSD2, mean2, variance2] = commonStuff(obs2);
   mean = mean1 - mean2;
-  printf ("Estimat af middelværdi:\nmu <= x. = x_1. - x_2. = %d\n", mean1 - mean2);
+  printf ("Estimat af middelværdi:\nmu <- x. = x_1. - x_2. = %d\n", mean1 - mean2);
   printf ("Estimerede spredning på x_1. - x_2.\n");
   variance = (SSD1 + SSD2) / (n1 + n2 - 2);
   stdError = sqrt(variance * (1 / n1 + 1 / n2));
@@ -38,7 +55,7 @@ function obsDiffInfo(obs1, obs2)
 endfunction
 
 function [F, pObs] = findCommonVarianceAndMean(obs1, obs2)
-  printf ("*** Test af hypotese om ens varians ***\n");
+  printf ("\n*** Test af hypotese om ens varians ***\n");
   [n1, S1, USS1, SSD1, mean1, variance1] = commonStuff(obs1);
   [n2, S2, USS2, SSD2, mean2, variance2] = commonStuff(obs2);
   # find test statistic (F-teststørrelsen)
@@ -52,8 +69,13 @@ function [F, pObs] = findCommonVarianceAndMean(obs1, obs2)
     variance = (SSD1 + SSD2) / (n1 + n2 - 2);
     printf ("Estimat for fælles varians:\n")
     printf ("sigma^2 <- s^2 = (SSD_1 + SSD_2) / (n1 + n2 - 2) = %d\n", variance);
+    printf ("sqrt(%d) = %d\n", variance, sqrt(variance));
+    printf ("95 procent konfidensintervallet for sigma^2 er:\n")
+    sigmaLower = ((n1 + n2 - 2) * variance) / chi2inv(0.975, n1 + n2 - 2);
+    sigmaUpper = ((n1 + n2 - 2) * variance) / chi2inv(0.025, n1 + n2 - 2);
+    printf ("[ f_1 s_1^2 / chi^2_{0.975}, f_1 s_1^2 / chi^2_{0.025}] = [%d, %d]", sigmaLower, sigmaUpper);
     
-    printf ("*** Test af hypotese om ens middelværdi ***\n");
+    printf ("\n*** Test af hypotese om ens middelværdi ***\n");
     printf ("Først findes den estimerede spredning på x_1. - x_2.\n");
     stdError = sqrt(variance * (1 / n1 + 1 / n2));
     printf ("StdError(x^1. - x^2.) = sqrt(s^2 (1/n_1 + 1/n_2)) = %d\n", stdError);
