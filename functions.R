@@ -77,6 +77,8 @@ printStuff <- function(n, S, USS) {
     eq(interpolate("c_{95}(\\mu) = \\bar{x.} \\mp t_{0.975}(f) StdError = `mean` \\mp `qt(0.975, f)*StdError`"))
     html("Estimeret varians")
     eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`SSD`}{`f`} = `variance`"))
+    html("Estimeret spredning")
+    eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(variance)`"))
     html("Konfidensinterval for $\\sigma^2$")
     eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`sigmaLower`, `sigmaUpper`]"))
 }
