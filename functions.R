@@ -2,7 +2,10 @@ library(IRdisplay)
 library(repr)
 library(gsubfn)
 
-# handy alias for `fn` from gsubfn
+## Avoid scientific notation.
+options("scipen" = 10)
+
+## handy alias for `fn` from gsubfn
 interpolate <- fn$identity
 int <- fn$identity
 
@@ -20,7 +23,7 @@ int <- fn$identity
 
 Sum <- function(list) Reduce("+", list)
 
-# to ease migration from Octave
+## to ease migration from Octave
 printf <- function(...) cat(sprintf(...))
 
 html <- function(...) display_html(paste(...))
@@ -31,7 +34,7 @@ t = function(meanEstimated, meanTry, variance, n) {
     return((meanEstimated - meanTry) / sqrt(variance / n));
 }
 
-# The likelihood ratio test size
+## The likelihood ratio test size
 Q <- function(mean, meanGuess, variance, n) {
     return(((1 + (t(mean, meanGuess, variance, n)^2)) / (n - 1))^(n / 2));
 }
@@ -82,7 +85,7 @@ calcC <- function(k, fs, f1) {
     return(1 + 1/(3 * (k - 1)) * (Reduce("+", Map(function(f) 1/f, fs)) - (1/f1)))
 }
 
-# Bartletts test
+## Bartletts test
 calcBa <- function(k, fs, f1, s1, dataList) {
     denominator = f1 * log(s1) - Reduce("+", Map(function(data) data$f * log(data$variance), dataList))
     return(denominator / calcC(k, fs, f1))
@@ -104,7 +107,7 @@ kObservations <- function(rows) {
     pObs = 1 - pchisq(Ba, k - 1)
     SSD2 = Reduce("+", Map(function(data) data$S^2 / data$n, dataList)) - (totalS^2 / totaln)
     ## variance2
-    # Print output
+    ## Print output
     html(int("Antal observationer: $ k = `k` $"))
     html("Estimeret varians")
     eq(int("s_1^2 = `s1`"))
@@ -126,9 +129,9 @@ kObservations <- function(rows) {
         eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`variance2`}{`s1`} = `F`"))
         eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `SSD2`"))
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
-        cat(pObs2)
         eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `pObs2`"))
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
     } else {
-        html("Da $pObs$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
+        html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
 }
