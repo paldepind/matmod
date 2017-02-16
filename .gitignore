@@ -1,0 +1,3 @@
+# Ignore jupyter notebook files
+*.ipynb
+.ipynb_checkpoints
