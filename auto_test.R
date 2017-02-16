@@ -2,4 +2,4 @@
 library(testthat)
 source("./R/functions.R")
 
-test_results <- test_dir("./tests", reporter = "summary")
+test_results <- auto_test("./R", "./tests", reporter = "summary")
