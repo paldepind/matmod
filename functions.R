@@ -116,14 +116,18 @@ kObservations <- function(rows) {
     eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `Ba`"))
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`k-1`)}(`Ba`) = `pObs`"))
     if (pObs > 0.05) {
-        pObs2 = 1 -
+        variance2 = SSD2 / (k-1)
+        F = variance2 / s1
+        pObs2 = 1 - pf(F, k - 1, totaln - k)
         html("Da $pObs(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html("<h2>Test af hypotese om ens middelværdi</h2>")
         eq(int("S. = `totalS`"))
+        eq(int("s_2^2 = \\frac{SSD_2}{k-1} = `variance2`"))
+        eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`variance2`}{`s1`} = `F`"))
         eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `SSD2`"))
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
-        eq(int("s_2^2 = \\frac{SSD_2}{f} = ..."))
-        eq(int("p_{obs}(x) = 1 - F_{F(f, n. - k)} = ..."))
+        cat(pObs2)
+        eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `pObs2`"))
     } else {
         html("Da $pObs$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
