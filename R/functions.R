@@ -30,7 +30,7 @@ html <- function(...) display_html(paste(...))
 eq <- function(...)
     display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
 
-t = function(meanEstimated, meanTry, variance, n) {
+t <- function(meanEstimated, meanTry, variance, n) {
     return((meanEstimated - meanTry) / sqrt(variance / n));
 }
 
@@ -84,12 +84,12 @@ printStuff <- function(n, S, USS) {
 }
 
 calcC <- function(k, fs, f1) {
-    return(1 + 1/(3 * (k - 1)) * (Reduce("+", Map(function(f) 1/f, fs)) - (1/f1)))
+    return(1 + 1/(3 * (k - 1)) * (Sum(Map(function(f) 1/f, fs)) - (1/f1)))
 }
 
 ## Bartletts test
 calcBa <- function(k, fs, f1, s1, dataList) {
-    denominator = f1 * log(s1) - Reduce("+", Map(function(data) data$f * log(data$variance), dataList))
+    denominator = f1 * log(s1) - Sum(Map(function(data) data$f * log(data$variance), dataList))
     return(denominator / calcC(k, fs, f1))
 }
 
@@ -99,15 +99,15 @@ kObservations <- function(rows) {
     dataList = Map(standardCalculations, rows)
     ## display(dataList)
     fs = Map(function(data) data$f, dataList)
-    f1 = Reduce("+", fs);
+    f1 = Sum(fs);
     ss = Map(function(data) data$variance, dataList)
-    totalSSD = Reduce("+", Map(function(data) data$SSD, dataList));
+    totalSSD = Sum(Map(function(data) data$SSD, dataList));
     s1 = totalSSD / Sum(Map(function(data) data$f, dataList));
     totalS = Sum(Map(function(data) data$S, dataList))
     totaln = Sum(Map(function(data) data$n, dataList))
     Ba = calcBa(k, fs, f1, s1, dataList)
     pObs = 1 - pchisq(Ba, k - 1)
-    SSD2 = Reduce("+", Map(function(data) data$S^2 / data$n, dataList)) - (totalS^2 / totaln)
+    SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (totalS^2 / totaln)
     ## variance2
     ## Print output
     html(int("Antal observationer: $ k = `k` $"))
