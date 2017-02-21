@@ -113,12 +113,15 @@ kObservations <- function(rows) {
     html(int("Antal observationer: $ k = `k` $"))
     html("Estimeret varians")
     eq(int("s_1^2 = `s1`"))
+    eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `totaln`"))
     eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `f1`"))
     eq(int("SSD_1 = `totalSSD`"))
     html("<h2>Test af hypotese om varianshomogenitet</h2>")
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
     eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `calcC(k, fs, f1)`"))
+    html("Teststørrelsen bliver")
     eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `Ba`"))
+    html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`k-1`)}(`Ba`) = `pObs`"))
     if (pObs > 0.05) {
         variance2 = SSD2 / (k-1)
@@ -136,4 +139,13 @@ kObservations <- function(rows) {
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
+}
+
+linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SP) {
+    xMean = Sx / n;
+    tMean = St / n;
+    SPDxt = 1 # FIXME
+    SSDt = USSt - (St^2 / n) # sum of squares of deviations
+    betaEstimate = SPDxt / SSDt;
+    alphaEstimate = xMean / betaEstimate * tMean;
 }
