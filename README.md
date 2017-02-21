@@ -1,4 +1,14 @@
-Run the following in R:
+# Matmod
+
+R utility functions for solving the exercises in Matematisk
+Modellering 1. The functions work inside the Jupyter notebook which
+allows them to print formatted output.
+
+## Installation
+
+Install R and Jupyter.
+
+Then, run the following in R:
 
 ```
 install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'))
