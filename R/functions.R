@@ -141,11 +141,14 @@ kObservations <- function(rows) {
     }
 }
 
-linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SP) {
+linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     xMean = Sx / n;
     tMean = St / n;
-    SPDxt = 1 # FIXME
+    SPDxt = SPxt - (Sx * St) / n
     SSDt = USSt - (St^2 / n) # sum of squares of deviations
+    print(SPDxt)
     betaEstimate = SPDxt / SSDt;
-    alphaEstimate = xMean / betaEstimate * tMean;
+    alphaEstimate = xMean - betaEstimate * tMean;
+    ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
+    return(list(betaEstimate = betaEstimate, alphaEstimate = alphaEstimate));
 }
