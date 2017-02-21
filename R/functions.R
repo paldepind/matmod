@@ -129,13 +129,17 @@ kObservations <- function(rows) {
         pObs2 = 1 - pf(F, k - 1, totaln - k)
         html("Da $pObs(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html("<h2>Test af hypotese om ens middelværdi</h2>")
+        eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
         eq(int("S. = `totalS`"))
         eq(int("s_2^2 = \\frac{SSD_2}{k-1} = `variance2`"))
         eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`variance2`}{`s1`} = `F`"))
         eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `SSD2`"))
-        eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
         eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `pObs2`"))
-        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
+        if (pObs2 > 0.05) {
+            html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
+        } else {
+            html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
+        }
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
