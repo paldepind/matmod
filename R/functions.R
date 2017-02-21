@@ -24,7 +24,7 @@ int <- fn$identity
 Sum <- function(list) Reduce("+", list)
 
 ## to ease migration from Octave
-printf <- function(...) cat(sprintf(...))
+## printf <- function(...) cat(sprintf(...))
 
 html <- function(...) display_html(paste(...))
 eq <- function(...)
@@ -42,8 +42,8 @@ Q <- function(mean, meanGuess, variance, n) {
 standardCalculations <- function(obs) {
     n = length(obs)
     f = n - 1
-    S = sum(obs)
-    USS = sum (obs ^ 2)
+    S = Sum(obs)
+    USS = Sum(Map(function(data) data^2, obs))
     SSD = USS - S^2 / n # sum of squares of deviations
     mean = S / n
     variance = SSD / (n - 1)
@@ -100,11 +100,11 @@ kObservations <- function(rows) {
     ## display(dataList)
     fs = Map(function(data) data$f, dataList)
     f1 = Sum(fs);
-    ss = Map(function(data) data$variance, dataList)
     totalSSD = Sum(Map(function(data) data$SSD, dataList));
     s1 = totalSSD / Sum(Map(function(data) data$f, dataList));
     totalS = Sum(Map(function(data) data$S, dataList))
     totaln = Sum(Map(function(data) data$n, dataList))
+    C = calcC(k, fs, f1)
     Ba = calcBa(k, fs, f1, s1, dataList)
     pObs = 1 - pchisq(Ba, k - 1)
     SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (totalS^2 / totaln)
@@ -118,7 +118,7 @@ kObservations <- function(rows) {
     eq(int("SSD_1 = `totalSSD`"))
     html("<h2>Test af hypotese om varianshomogenitet</h2>")
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
-    eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `calcC(k, fs, f1)`"))
+    eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `C`"))
     html("Teststørrelsen bliver")
     eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `Ba`"))
     html("Testsandsynligheden er")
@@ -142,7 +142,11 @@ kObservations <- function(rows) {
         }
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
+        ##TODO html("Test fælles middelværdi med ukendt varians.")
     }
+    return(list(k = k, s1 = s1, n1 = totaln, f1 = f1, SSD1 = totalSSD, C = C,
+                Ba = Ba, pObs1 = pObs, s2 = variance2, F = F, pObs2 = pObs2,
+                Sdot = totalS, SSD2 = SSD2))
 }
 
 linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
@@ -150,7 +154,7 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     tMean = St / n;
     SPDxt = SPxt - (Sx * St) / n
     SSDt = USSt - (St^2 / n) # sum of squares of deviations
-    print(SPDxt)
+    ## print(SPDxt)
     betaEstimate = SPDxt / SSDt;
     alphaEstimate = xMean - betaEstimate * tMean;
     ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
