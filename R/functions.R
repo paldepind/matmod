@@ -182,6 +182,10 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
                 betaEstimate = betaEstimate, alphaEstimate = alphaEstimate));
 }
 
+alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"
+
+betaDistribution = "N(\\beta, \\frac{\\sigma^2}{SSD_t})"
+
 printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
     eq(int("n = `n`"))
@@ -193,6 +197,6 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
     eq(int("\\bar{t}. = \\frac{S_x}{n} = `c$tMean`"))
     eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
-    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate`"))
-    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate`"))
+    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
+    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
 }
