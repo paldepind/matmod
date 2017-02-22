@@ -53,13 +53,7 @@ standardCalculations <- function(obs) {
     mean = S / n
     variance = SSD / (n - 1)
     return(list(
-        n = n,
-        f = f,
-        S = S,
-        USS = USS,
-        SSD = SSD,
-        mean = mean,
-        variance = variance
+        n = n, f = f, S = S, USS = USS, SSD = SSD, mean = mean, variance = variance
     ))
 }
 
@@ -134,23 +128,9 @@ kObservations <- function(rows) {
     C95End = (f1*s1)/chiEnd
     
     return(list(
-        k = k,
-        s1 = s1,
-        n1 = n1,
-        f1 = f1,
-        SSD1 = SSD1,
-        C = C,
-        Ba = Ba,
-        pObs1 = pObs1,
-        s2 = s2,
-        F = F,
-        pObs2 = pObs2,
-        Sdot = Sdot,
-        SSD2 = SSD2,
-        chiStart = chiStart,
-        chiEnd = chiEnd,
-        C95Start = C95Start,
-        C95End = C95End
+        k = k, s1 = s1, n1 = n1, f1 = f1, SSD1 = SSD1, C = C, Ba = Ba, pObs1 = pObs1,
+        s2 = s2, F = F, pObs2 = pObs2, Sdot = Sdot, SSD2 = SSD2, chiStart = chiStart,
+        chiEnd = chiEnd, C95Start = C95Start, C95End = C95End
     ))
 }
 
@@ -224,23 +204,12 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     C95AlphaStart = alphaEstimate - t975 * stdErrorAlpha
     C95AlphaEnd   = alphaEstimate + t975 * stdErrorAlpha
     ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
-    return(list(xMean = xMean,
-                tMean = tMean,
-                SPDxt = SPDxt,
-                SSDt = SSDt,
-                SSDx = SSDx,
-                SSD02 = SSD02,
-                s02 = s02,
-                t975 = t975,
-                betaEstimate = betaEstimate,
-                alphaEstimate = alphaEstimate,
-                stdErrorBeta = stdErrorBeta,
-                stdErrorAlpha = stdErrorAlpha,
-                C95BetaStart = C95BetaStart,
-                C95BetaEnd = C95BetaEnd,
-                C95AlphaStart = C95AlphaStart,
-                C95AlphaEnd   = C95AlphaEnd  
-                ));
+    return(list(
+        xMean = xMean, tMean = tMean, SPDxt = SPDxt, SSDt = SSDt, SSDx = SSDx, SSD02 = SSD02,
+        s02 = s02, t975 = t975, betaEstimate = betaEstimate, alphaEstimate = alphaEstimate,
+        stdErrorBeta = stdErrorBeta, stdErrorAlpha = stdErrorAlpha, C95BetaStart = C95BetaStart,
+        C95BetaEnd = C95BetaEnd, C95AlphaStart = C95AlphaStart, C95AlphaEnd = C95AlphaEnd
+    ));
 }
 
 fTest <- function(n, k, SSD1, SSD02) {
