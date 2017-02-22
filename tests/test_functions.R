@@ -17,7 +17,7 @@ describe("kObservations", {
         expect_equal(results$f1, 48)
     })
     it("calculates SSD_1", {
-        expect_equal(results$SSD1, 42976.31, tolerance = 1)
+        expect_equal(results$SSD1, 42976.31, tolerance = 0.005)
     })
     it("calculates C", {
         expect_equal(results$C, 1.03, tolerance = 0.005)
@@ -29,7 +29,7 @@ describe("kObservations", {
         expect_equal(results$pObs1, 0.76, tolerance = 0.005)
     })
     it("calculates s^2_2", {
-        expect_equal(results$s2, 19212.12, tolerance = 1)
+        expect_equal(results$s2, 19212.12, tolerance = 0.005)
     })
     it("calculates F", {
         expect_equal(results$F, 21.46, tolerance = 0.005)
@@ -41,12 +41,13 @@ describe("kObservations", {
         expect_equal(results$Sdot, 13405)
     })
     it("calculates SSD_2", {
-        expect_equal(results$SSD2, 57636.37, tolerance = 0.05)
+        expect_equal(results$SSD2, 57636.37, tolerance = 0.005)
     })
 })
 
 describe("linearRegressionEstimates", {
-    results = linearRegressionEstimates(n=13, Sx=2230.7, St = 736, USSx = 3853587.57, USSt = 42702, SPxt = 127872.1)
+    results = linearRegressionEstimates(n=13, Sx=2230.7, St = 736, USSx = 385387.57, USSt = 42702, SPxt = 127872.1)
+    resultsObl = linearRegressionEstimates(n = 21, Sx = 6068, St = 525, USSx = 1773300, USSt = 13353, SPxt = 153773)
     it("calculates an estimate for beta", {
         expect_equal(results$betaEstimate, 1.53, tolerance = 0.005)
     })
@@ -54,18 +55,30 @@ describe("linearRegressionEstimates", {
         expect_equal(results$alphaEstimate, 84.99, tolerance = 0.005)
     })
     it("calculates SSD_t", {
-        expect_equal(results$SSDt, 2616.61, tolerance = 1)
+        expect_equal(results$SSDt, 1033.08, tolerance = 0.005)
     })
     it("calculates SSD_x", {
-        expect_equal(results$SSDx, 1033.08, tolerance = 1)
+        expect_equal(results$SSDx, 2616.61, tolerance = 0.005)
     })
     it("calculates SPD_xt", {
-        expect_equal(results$SPDxt, 1580.16, tolerance = 1)
+        expect_equal(results$SPDxt, 1580.16, tolerance = 0.005)
     })
     it("calculates SSD02", {
-        expect_equal(results$SSD02, 199.64, tolerance = 1)
+        expect_equal(results$SSD02, 199.64, tolerance = 0.005)
     })
     it("calculates s^2_02", {
-        expect_equal(results$s02, 18.15, tolerance = 0.05)
+        expect_equal(results$s02, 18.15, tolerance = 0.005)
+    })
+    it("calculates C95BetaStart", {
+        expect_equal(results$C95BetaStart, 1.24, tolerance = 0.005)
+    })
+    it("calculates C95BetaEnd", {
+        expect_equal(results$C95BetaEnd, 1.82, tolerance = 0.005)
+    })
+    it("calculates C95AlphaStart", {
+        expect_equal(resultsObl$C95AlphaStart, 35.19, tolerance = 0.005)
+    })
+    it("calculates C95AlphaEnd", {
+        expect_equal(resultsObl$C95AlphaEnd, 88.11, tolerance = 0.005)
     })
 })
