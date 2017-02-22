@@ -218,7 +218,9 @@ fTest <- function(n, k, SSD1, SSD02) {
     ## Fx = ((SSD02 - SSD1) / (f02 - (n - 1))) / variance1
     Fx = variance2 / variance1
     pObs = 1 - pf(Fx, k - 2, n - k)
-    return(list(SSD2 = SSD2, variance1 = variance1, variance2 = variance2, Fx = Fx, pObs = pObs))
+    testResult = pObs > 0.05
+    return(list(SSD2 = SSD2, variance1 = variance1, variance2 = variance2,
+                Fx = Fx, pObs = pObs, testResult = testResult))
 }
 
 printFTest <- function(n, k, SSD1, SSD02) {
@@ -228,8 +230,15 @@ printFTest <- function(n, k, SSD1, SSD02) {
     eq(int("SSD_2 = SSD_{02} - SSD_1 = `SSD02` - `SSD1` = `c$SSD2`"))
     eq(int("s_1^2 = \\frac{SSD_1}{n - k} = \\frac{`SSD1`}{`n - k`} = `c$variance1`"))
     eq(int("s_2^2 = \\frac{SSD_2}{k - 2} = \\frac{`c$SSD2`}{`k - 2`} = `c$variance2`"))
+    html("Teststørrelsen")
     eq(int("F(x) = \\frac{s_2^2}{s_1^2} = `c$Fx` \\sim\\sim F(`k - 2`, `n - k`)"))
+    html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{F(k-2, n-k)}(F(x)) = `c$pObs`"))
+    if (c$testResult == TRUE) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om lineær regression <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen om lineær regression.")
+    }
 }
 
 alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"
