@@ -196,6 +196,7 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
                 SSDx = SSDx,
                 SSD02 = SSD02,
                 s02 = s02,
+                t975 = t975,
                 betaEstimate = betaEstimate,
                 alphaEstimate = alphaEstimate,
                 stdErrorBeta = stdErrorBeta,
@@ -218,10 +219,21 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("S_t = `St`"))
     eq(int("USS_x = `USSx`"))
     eq(int("USS_t = `USSt`"))
+    eq(int("SSD_t = USS_t - \\frac{S_t^2}{n} = `c$SSDt`"))
+    eq(int("SSD_x = USS_x - \\frac{S_x^2}{n} = `c$SSDx`"))
     eq(int("SP_{xt} = `SPxt`"))
     eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
     eq(int("\\bar{t}. = \\frac{S_x}{n} = `c$tMean`"))
     eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
     eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
     eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
+    eq(int("t_{0.975}(n - 2) = `c$t975`"))
+    eq(int("s_{02}^2 = `c$s02`"))
+    eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
+    eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
+
+    eq(int("C_{95}(\\beta) = \\hat{\\beta} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\beta}) = `c$betaEstimate` \\mp `c$t975*c$stdErrorBeta` = [`c$C95BetaStart`; `c$C95BetaEnd`]"))
+    eq(int("C_{95}(\\alpha) = \\hat{\\alpha} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\alpha}) = `c$alphaEstimate` \\mp `c$t975*c$stdErrorAlpha` = [`c$C95AlphaStart`; `c$C95AlphaEnd`]"))
 }
+
+
