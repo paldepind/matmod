@@ -30,6 +30,7 @@ html <- function(...) display_html(paste(...))
 eq <- function(...)
     display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
 
+# t-test
 t <- function(meanEstimated, meanTry, variance, n) {
     return((meanEstimated - meanTry) / sqrt(variance / n));
 }
@@ -154,9 +155,24 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     tMean = St / n;
     SPDxt = SPxt - (Sx * St) / n
     SSDt = USSt - (St^2 / n) # sum of squares of deviations
-    ## print(SPDxt)
     betaEstimate = SPDxt / SSDt;
     alphaEstimate = xMean - betaEstimate * tMean;
     ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
-    return(list(betaEstimate = betaEstimate, alphaEstimate = alphaEstimate));
+    return(list(xMean = xMean, tMean = tMean, SPDxt = SPDxt, SSDt = SSDt,
+                betaEstimate = betaEstimate, alphaEstimate = alphaEstimate));
+}
+
+printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
+    c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
+    eq(int("n = `n`"))
+    eq(int("S_x = `Sx`"))
+    eq(int("S_t = `St`"))
+    eq(int("USS_x = `USSx`"))
+    eq(int("USS_t = `USSt`"))
+    eq(int("SP_{xt} = `SPxt`"))
+    eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
+    eq(int("\\bar{t}. = \\frac{S_x}{n} = `c$tMean`"))
+    eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
+    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate`"))
+    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate`"))
 }
