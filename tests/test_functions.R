@@ -46,11 +46,26 @@ describe("kObservations", {
 })
 
 describe("linearRegressionEstimates", {
-    estimates = linearRegressionEstimates(n=13, Sx=2230.7, St = 736, USSx = 3853587.57, USSt = 42702, SPxt = 127872.1)
-    it("can calculate an estimate for beta", {
-        expect_equal(estimates$betaEstimate, 1.53, tolerance = 0.005)
+    results = linearRegressionEstimates(n=13, Sx=2230.7, St = 736, USSx = 3853587.57, USSt = 42702, SPxt = 127872.1)
+    it("calculates an estimate for beta", {
+        expect_equal(results$betaEstimate, 1.53, tolerance = 0.005)
     })
-    it("can calculate an estimate for alpha", {
-        expect_equal(estimates$alphaEstimate, 84.99, tolerance = 0.005)
+    it("calculates an estimate for alpha", {
+        expect_equal(results$alphaEstimate, 84.99, tolerance = 0.005)
+    })
+    it("calculates SSD_t", {
+        expect_equal(results$SSDt, 2616.61, tolerance = 1)
+    })
+    it("calculates SSD_x", {
+        expect_equal(results$SSDx, 1033.08, tolerance = 1)
+    })
+    it("calculates SPD_xt", {
+        expect_equal(results$SPDxt, 1580.16, tolerance = 1)
+    })
+    it("calculates SSD02", {
+        expect_equal(results$SSD02, 199.64, tolerance = 1)
+    })
+    it("calculates s^2_02", {
+        expect_equal(results$s02, 18.15, tolerance = 0.05)
     })
 })
