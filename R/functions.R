@@ -163,7 +163,7 @@ kObservations <- function(rows) {
         
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
-        ##TODO html("Test fælles middelværdi med ukendt varians.")
+        ##TODO html("Test fælles middelværdi med ikke fælles varians.")
     }
     
     return(list(k = k, s1 = s1, n1 = totaln, f1 = f1, SSD1 = totalSSD, C = C,
