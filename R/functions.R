@@ -180,7 +180,7 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     betaEstimate = SPDxt / SSDt;
     alphaEstimate = xMean - betaEstimate * tMean;
     SSD02 = SSDx - SPDxt^2 / SSDt
-    s02 = SSD02 / (n - 2)
+    s02 = SSD02 / (n - 2) # s^2_02
     stdErrorBeta  = sqrt(s02 / SSDt)
     stdErrorAlpha = sqrt(s02 * (1 / n + tMean^2 / SSDt))
     t975 = qt(0.975, n-2)
@@ -206,6 +206,30 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
                 C95AlphaStart = C95AlphaStart,
                 C95AlphaEnd   = C95AlphaEnd  
                 ));
+}
+
+fTest <- function(n, k, SSD1, SSD02) {
+    ## f-test
+    f02 = n - 2
+    ## SSD1 = Sum(SDDi)
+    SSD2 = SSD02 - SSD1
+    variance1 = SSD1 / (n - k)
+    variance2 = SSD2 / (k - 2)
+    ## Fx = ((SSD02 - SSD1) / (f02 - (n - 1))) / variance1
+    Fx = variance2 / variance1
+    pObs = 1 - pf(Fx, k - 2, n - k)
+    return(list(SSD2 = SSD2, variance1 = variance1, variance2 = variance2, Fx = Fx, pObs = pObs))
+}
+
+printFTest <- function(n, k, SSD1, SSD02) {
+    c = fTest(n, k, SSD1, SSD02)
+    html("<h2>Tester hypotese om lineær regression</h2>")
+    eq("H_{02}: \\mu_i = \\alpha + \\beta t_i, \\quad i = 1, \\dots , k")
+    eq(int("SSD_2 = SSD_{02} - SSD_1 = `SSD02` - `SSD1` = `c$SSD2`"))
+    eq(int("s_1^2 = \\frac{SSD_1}{n - k} = \\frac{`SSD1`}{`n - k`} = `c$variance1`"))
+    eq(int("s_2^2 = \\frac{SSD_2}{k - 2} = \\frac{`c$SSD2`}{`k - 2`} = `c$variance2`"))
+    eq(int("F(x) = \\frac{s_2^2}{s_1^2} = `c$Fx` \\sim\\sim F(`k - 2`, `n - k`)"))
+    eq(int("p_{obs}(x) = 1 - F_{F(k-2, n-k)}(F(x)) = `c$pObs`"))
 }
 
 alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"

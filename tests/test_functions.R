@@ -82,3 +82,12 @@ describe("linearRegressionEstimates", {
         expect_equal(resultsObl$C95AlphaEnd, 88.11, tolerance = 0.005)
     })
 })
+
+describe("fTest", {
+    ## Data fra side 137 - 138
+    result = fTest(12, 3, 0.0182, 0.023416)
+    expect_equal(result$variance1, 0.00202, tolerance = 0.005)
+    expect_equal(result$variance2, 0.0052, tolerance = 0.005)
+    expect_equal(result$Fx, 2.57, tolerance = 0.005)
+    expect_equal(result$pObs, 0.14, tolerance = 0.005)
+})
