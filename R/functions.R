@@ -176,11 +176,35 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     tMean = St / n;
     SPDxt = SPxt - (Sx * St) / n
     SSDt = USSt - (St^2 / n) # sum of squares of deviations
+    SSDx = USSx - (Sx^2 / n)
     betaEstimate = SPDxt / SSDt;
     alphaEstimate = xMean - betaEstimate * tMean;
+    SSD02 = SSDx - SPDxt^2 / SSDt
+    s02 = SSD02 / (n - 2)
+    stdErrorBeta  = sqrt(s02 / SSDt)
+    stdErrorAlpha = sqrt(s02 * (1 / n + tMean^2 / SSDt))
+    t975 = qt(0.975, n-2)
+    C95BetaStart = betaEstimate - t975 * stdErrorBeta
+    C95BetaEnd   = betaEstimate + t975 * stdErrorBeta
+    C95AlphaStart = alphaEstimate - t975 * stdErrorAlpha
+    C95AlphaEnd   = alphaEstimate + t975 * stdErrorAlpha
     ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
-    return(list(xMean = xMean, tMean = tMean, SPDxt = SPDxt, SSDt = SSDt,
-                betaEstimate = betaEstimate, alphaEstimate = alphaEstimate));
+    return(list(xMean = xMean,
+                tMean = tMean,
+                SPDxt = SPDxt,
+                SSDt = SSDt,
+                SSDx = SSDx,
+                SSD02 = SSD02,
+                s02 = s02,
+                betaEstimate = betaEstimate,
+                alphaEstimate = alphaEstimate,
+                stdErrorBeta = stdErrorBeta,
+                stdErrorAlpha = stdErrorAlpha,
+                C95BetaStart = C95BetaStart,
+                C95BetaEnd = C95BetaEnd,
+                C95AlphaStart = C95AlphaStart,
+                C95AlphaEnd   = C95AlphaEnd  
+                ));
 }
 
 alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"
