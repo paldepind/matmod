@@ -40,15 +40,27 @@ Q <- function(mean, meanGuess, variance, n) {
     return(((1 + (t(mean, meanGuess, variance, n)^2)) / (n - 1))^(n / 2));
 }
 
+calcSSD <- function(n, USS, S) {
+    return (USS - S^2 / n) # sum of squares of deviations
+}
+
 standardCalculations <- function(obs) {
     n = length(obs)
     f = n - 1
     S = Sum(obs)
     USS = Sum(Map(function(data) data^2, obs))
-    SSD = USS - S^2 / n # sum of squares of deviations
+    SSD = calcSSD(n, USS, S)
     mean = S / n
     variance = SSD / (n - 1)
-    return(list(n = n, f = f, S = S, USS = USS, SSD = SSD, mean = mean, variance = variance))
+    return(list(
+        n = n,
+        f = f,
+        S = S,
+        USS = USS,
+        SSD = SSD,
+        mean = mean,
+        variance = variance
+    ))
 }
 
 printStandardCalculations <- function(obs) {
@@ -62,7 +74,7 @@ printStandardCalculations <- function(obs) {
 
 printStuff <- function(n, S, USS) {
     mean <- S / n;
-    SSD <- USS - S^2 / n; # sum of squares of deviations
+    SSD = calcSSD(n, USS, S); # sum of squares of deviations
     variance <- SSD / (n - 1); # usually denoted as s^2
     f <- n - 1; # degrees of freedom
     StdError <- variance / n;
@@ -101,82 +113,105 @@ kObservations <- function(rows) {
     ## display(dataList)
     fs = Map(function(data) data$f, dataList)
     f1 = Sum(fs);
-    totalSSD = Sum(Map(function(data) data$SSD, dataList));
-    s1 = totalSSD / Sum(Map(function(data) data$f, dataList));
-    totalS = Sum(Map(function(data) data$S, dataList))
-    totaln = Sum(Map(function(data) data$n, dataList))
+    SSD1 = Sum(Map(function(data) data$SSD, dataList));
+    s1 = SSD1 / Sum(Map(function(data) data$f, dataList));
+    Sdot = Sum(Map(function(data) data$S, dataList))
+    n1 = Sum(Map(function(data) data$n, dataList))
     C = calcC(k, fs, f1)
     Ba = calcBa(k, fs, f1, s1, dataList)
-    pObs = 1 - pchisq(Ba, k - 1)
-    SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (totalS^2 / totaln)
+    pObs1 = 1 - pchisq(Ba, k - 1)
+    SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (Sdot^2 / n1)
     ## variance2
     ## Print output
-    html(int("Antal observationer: $ k = `k` $"))
+
+    s2 = SSD2 / (k-1)
+    F = s2 / s1
+    pObs2 = 1 - pf(F, k - 1, n1 - k)
+    
+    chiStart = qchisq(1-(0.05/2), f1)
+    chiEnd = qchisq((0.05/2), f1)
+    C95Start = (f1*s1)/chiStart
+    C95End = (f1*s1)/chiEnd
+    
+    return(list(
+        k = k,
+        s1 = s1,
+        n1 = n1,
+        f1 = f1,
+        SSD1 = SSD1,
+        C = C,
+        Ba = Ba,
+        pObs1 = pObs1,
+        s2 = s2,
+        F = F,
+        pObs2 = pObs2,
+        Sdot = Sdot,
+        SSD2 = SSD2,
+        chiStart = chiStart,
+        chiEnd = chiEnd,
+        C95Start = C95Start,
+        C95End = C95End
+    ))
+}
+
+printkObservations <- function(rows) {
+    c = kObservations(rows)
+    html(int("Antal observationer: $ k = `c$k` $"))
     html("Estimeret varians")
-    eq(int("s_1^2 = `s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`f1`)}{`f1`}"))
-    eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `totaln`"))
-    eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `f1`"))
-    eq(int("SSD_1 = `totalSSD`"))
+    eq(int("s_1^2 = `c$s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
+    eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `c$n1`"))
+    eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `c$f1`"))
+    eq(int("SSD_1 = `c$SSD1`"))
 
     html("<h2>Test af hypotese om varianshomogenitet</h2>")
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
-    eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `C`"))
+    eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `c$C`"))
     html("Teststørrelsen bliver")
-    eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `Ba`"))
+    eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `c$Ba`"))
     html("Testsandsynligheden er")
-    eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`k-1`)}(`Ba`) = `pObs`"))
-    if (pObs > 0.05) {
-        variance2 = SSD2 / (k-1)
-        F = variance2 / s1
-        pObs2 = 1 - pf(F, k - 1, totaln - k)
-        html("Da $pObs(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
+    eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
+    if (c$pObs1 > 0.05) {
 
+        html("Da $p_{Obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html(int("<h2>Konfidensinterval for variansen $\\sigma^2$</h2>"))
-        chi1 = qchisq(1-(0.05/2), f1)
-        chi2 = qchisq((0.05/2), f1)
-        CintStart = (f1*s1)/chi1
-        CintEnd = (f1*s1)/chi2
-        eq(int("\\chi^2_{0.975}(`f1`) = `chi1`"))
-        eq(int("\\chi^2_{0.025}(`f1`) = `chi2`"))
+
+        eq(int("\\chi^2_{0.975}(`c$f1`) = `c$chiStart`"))
+        eq(int("\\chi^2_{0.025}(`c$f1`) = `c$chiEnd`"))
         eq(int("\\frac{f_1 s_1^2}{ \\chi^2_{1-\\frac{\\alpha}{2}}(f_1)}
 \\leq \\sigma^2 \\leq
 \\frac{f_1 s_1^2}{\\chi^2_{\\frac{\\alpha}{2}}(f_1)}
 \\Rightarrow
- \\frac{`f1`\\cdot `s1`}{\\chi^2_{1-\\frac{0.05}{2}}(`f1`)}
+ \\frac{`c$f1`\\cdot `c$s1`}{\\chi^2_{1-\\frac{0.05}{2}}(`c$f1`)}
 \\leq \\sigma^2 \\leq
-\\frac{`f1`\\cdot `s1`}{\\chi^2_{\\frac{0.05}{2}}(`f1`)}
+\\frac{`c$f1` \\cdot `c$s1`}{\\chi^2_{\\frac{0.05}{2}}(`c$f1`)}
 \\Rightarrow
- `CintStart` \\leq \\sigma^2 \\leq `CintEnd` "))
+ `c$C95Start` \\leq \\sigma^2 \\leq `c$C95End` "))
         
         html("<h2>Test af hypotese om ens middelværdi</h2>")
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
-        eq(int("S. = `totalS`"))
-        eq(int("s_2^2 = \\frac{SSD_2}{k-1} = `variance2`"))
-        eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`variance2`}{`s1`} = `F`"))
-        eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `SSD2`"))
-        eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `pObs2`"))
-        if (pObs2 > 0.05) {
+        eq(int("S. = `c$SSD1`"))
+        eq(int("s_2^2 = \\frac{SSD_2}{k-1} = `c$s2`"))
+        eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`c$s2`}{`c$s1`} = `c$F`"))
+        eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `c$SSD2`"))
+        eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `c$pObs2`"))
+        if (c$pObs2 > 0.05) {
             html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
         } else {
-            html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
+            html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
         }
         
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
         ##TODO html("Test fælles middelværdi med ikke fælles varians.")
     }
-    
-    return(list(k = k, s1 = s1, n1 = totaln, f1 = f1, SSD1 = totalSSD, C = C,
-                Ba = Ba, pObs1 = pObs, s2 = variance2, F = F, pObs2 = pObs2,
-                Sdot = totalS, SSD2 = SSD2))
 }
 
 linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     xMean = Sx / n;
     tMean = St / n;
     SPDxt = SPxt - (Sx * St) / n
-    SSDt = USSt - (St^2 / n) # sum of squares of deviations
-    SSDx = USSx - (Sx^2 / n)
+    SSDt = calcSSD(n, USSt, St) # sum of squares of deviations
+    SSDx = calcSSD(n, USSx, Sx) # sum of squares of deviations
     betaEstimate = SPDxt / SSDt;
     alphaEstimate = xMean - betaEstimate * tMean;
     SSD02 = SSDx - SPDxt^2 / SSDt
