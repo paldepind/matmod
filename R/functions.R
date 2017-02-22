@@ -117,6 +117,7 @@ kObservations <- function(rows) {
     eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `totaln`"))
     eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `f1`"))
     eq(int("SSD_1 = `totalSSD`"))
+
     html("<h2>Test af hypotese om varianshomogenitet</h2>")
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
     eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `C`"))
@@ -131,17 +132,22 @@ kObservations <- function(rows) {
         html("Da $pObs(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
 
         html(int("<h2>Konfidensinterval for variansen $\\sigma^2$</h2>"))
-        CintStart = f1*s1/pchisq(1-(0.05/2), 14)
-        CintEnd = f1*s1/pchisq((0.05/2), 14)
+        chi1 = qchisq(1-(0.05/2), f1)
+        chi2 = qchisq((0.05/2), f1)
+        CintStart = (f1*s1)/chi1
+        CintEnd = (f1*s1)/chi2
+        eq(int("\\chi^2_{0.975}(`f1`) = `chi1`"))
+        eq(int("\\chi^2_{0.025}(`f1`) = `chi2`"))
         eq(int("\\frac{f_1 s_1^2}{ \\chi^2_{1-\\frac{\\alpha}{2}}(f_1)}
 \\leq \\sigma^2 \\leq
 \\frac{f_1 s_1^2}{\\chi^2_{\\frac{\\alpha}{2}}(f_1)}
-=
+\\Rightarrow
  \\frac{`f1`\\cdot `s1`}{\\chi^2_{1-\\frac{0.05}{2}}(`f1`)}
 \\leq \\sigma^2 \\leq
 \\frac{`f1`\\cdot `s1`}{\\chi^2_{\\frac{0.05}{2}}(`f1`)}
-= `CintStart` \\leq \\sigma^2 \\leq `CintEnd` "))
-
+\\Rightarrow
+ `CintStart` \\leq \\sigma^2 \\leq `CintEnd` "))
+        
         html("<h2>Test af hypotese om ens middelværdi</h2>")
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
         eq(int("S. = `totalS`"))
@@ -154,16 +160,11 @@ kObservations <- function(rows) {
         } else {
             html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
         }
-
-
         
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
         ##TODO html("Test fælles middelværdi med ukendt varians.")
     }
-
-    
-    
     
     return(list(k = k, s1 = s1, n1 = totaln, f1 = f1, SSD1 = totalSSD, C = C,
                 Ba = Ba, pObs1 = pObs, s2 = variance2, F = F, pObs2 = pObs2,
