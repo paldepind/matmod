@@ -118,6 +118,7 @@ kObservations <- function(rows) {
     Sdot = Sum(Map(function(data) data$S, dataList))
     n1 = Sum(Map(function(data) data$n, dataList))
     C = calcC(k, fs, f1)
+    lnQx = f1 * log(s1) - Sum(Map(function(data) data$f * log(data$variance), dataList))
     Ba = calcBa(k, fs, f1, s1, dataList)
     pObs1 = 1 - pchisq(Ba, k - 1)
     SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (Sdot^2 / n1)
@@ -140,6 +141,7 @@ kObservations <- function(rows) {
         f1 = f1,
         SSD1 = SSD1,
         C = C,
+        lnQx = lnQx,
         Ba = Ba,
         pObs1 = pObs1,
         s2 = s2,
@@ -165,14 +167,15 @@ printkObservations <- function(rows) {
 
     html("<h2>Test af hypotese om varianshomogenitet</h2>")
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
-    eq(int("C = 1 + \\frac{1}{3(k-1)} ((\\sum_{i=1}^{k}\\frac{1}{f_{(i)}}) - \\frac{1}{f_1}) = `c$C`"))
+    eq(int("C = 1 + \\frac{1}{3(k-1)} \\left(\\left(\\sum\\limits_{i=1}^{k}\\frac{1}{f_{(i)}}\\right) - \\frac{1}{f_1}\\right) = `c$C`"))
     html("Teststørrelsen bliver")
-    eq(int("Ba = \\frac{-2 ln(Q(x))}{C} = `c$Ba`"))
+    eq(int("-2 \\ln(Q(x)) = f_1 \\ln s_1^2 - \\sum\\limits_{i=1}^{k}f_{(i)} \\ln s^2_{(i)} = `c$lnQx`"))
+    eq(int("Ba = \\frac{-2 \\ln(Q(x))}{C} = `c$Ba`"))
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
     if (c$pObs1 > 0.05) {
 
-        html("Da $p_{Obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html(int("<h2>Konfidensinterval for variansen $\\sigma^2$</h2>"))
 
         eq(int("\\chi^2_{0.975}(`c$f1`) = `c$chiStart`"))
@@ -192,7 +195,7 @@ printkObservations <- function(rows) {
         eq(int("S. = `c$SSD1`"))
         eq(int("s_2^2 = \\frac{SSD_2}{k-1} = `c$s2`"))
         eq(int("F = \\frac{s_2^2}{s_1^2} = \\frac{`c$s2`}{`c$s1`} = `c$F`"))
-        eq(int("SSD_2 = (\\sum_{i=1}^{k} \\frac{S_i^2}{n_i}) - \\frac{S.^2}{n.} = `c$SSD2`"))
+        eq(int("SSD_2 = \\left(\\sum_{i=1}^{k} \\frac{S_i^2}{n_i} \\right) - \\frac{S.^2}{n.} = `c$SSD2`"))
         eq(int("p_{obs}(x) = 1 - F_{F(k - 1, n. - k)} = `c$pObs2`"))
         if (c$pObs2 > 0.05) {
             html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
