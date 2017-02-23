@@ -53,13 +53,7 @@ standardCalculations <- function(obs) {
     mean = S / n
     variance = SSD / (n - 1)
     return(list(
-        n = n,
-        f = f,
-        S = S,
-        USS = USS,
-        SSD = SSD,
-        mean = mean,
-        variance = variance
+        n = n, f = f, S = S, USS = USS, SSD = SSD, mean = mean, variance = variance
     ))
 }
 
