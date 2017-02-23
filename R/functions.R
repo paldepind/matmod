@@ -135,24 +135,9 @@ kObservations <- function(rows) {
     C95End = (f1*s1)/chiEnd
     
     return(list(
-        k = k,
-        s1 = s1,
-        n1 = n1,
-        f1 = f1,
-        SSD1 = SSD1,
-        C = C,
-        lnQx = lnQx,
-        Ba = Ba,
-        pObs1 = pObs1,
-        s2 = s2,
-        F = F,
-        pObs2 = pObs2,
-        Sdot = Sdot,
-        SSD2 = SSD2,
-        chiStart = chiStart,
-        chiEnd = chiEnd,
-        C95Start = C95Start,
-        C95End = C95End
+        k = k, s1 = s1, n1 = n1, f1 = f1, SSD1 = SSD1, C = C, lnQx = lnQx, Ba = Ba, pObs1 = pObs1,
+        s2 = s2, F = F, pObs2 = pObs2, Sdot = Sdot, SSD2 = SSD2, chiStart = chiStart,
+        chiEnd = chiEnd, C95Start = C95Start, C95End = C95End
     ))
 }
 
@@ -174,8 +159,7 @@ printkObservations <- function(rows) {
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
     if (c$pObs1 > 0.05) {
-
-        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
+        html("Da $p_{Obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html(int("<h2>Konfidensinterval for variansen $\\sigma^2$</h2>"))
 
         eq(int("\\chi^2_{0.975}(`c$f1`) = `c$chiStart`"))
@@ -227,23 +211,13 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     C95AlphaStart = alphaEstimate - t975 * stdErrorAlpha
     C95AlphaEnd   = alphaEstimate + t975 * stdErrorAlpha
     ## alphaEstimate = (Sx - (betaEstimate * St)) / n;
-    return(list(xMean = xMean,
-                tMean = tMean,
-                SPDxt = SPDxt,
-                SSDt = SSDt,
-                SSDx = SSDx,
-                SSD02 = SSD02,
-                s02 = s02,
-                t975 = t975,
-                betaEstimate = betaEstimate,
-                alphaEstimate = alphaEstimate,
-                stdErrorBeta = stdErrorBeta,
-                stdErrorAlpha = stdErrorAlpha,
-                C95BetaStart = C95BetaStart,
-                C95BetaEnd = C95BetaEnd,
-                C95AlphaStart = C95AlphaStart,
-                C95AlphaEnd   = C95AlphaEnd  
-                ));
+
+    return(list(
+        xMean = xMean, tMean = tMean, SPDxt = SPDxt, SSDt = SSDt, SSDx = SSDx, SSD02 = SSD02,
+        s02 = s02, t975 = t975, betaEstimate = betaEstimate, alphaEstimate = alphaEstimate,
+        stdErrorBeta = stdErrorBeta, stdErrorAlpha = stdErrorAlpha, C95BetaStart = C95BetaStart,
+        C95BetaEnd = C95BetaEnd, C95AlphaStart = C95AlphaStart, C95AlphaEnd = C95AlphaEnd
+    ));
 }
 
 fTest <- function(n, k, SSD1, SSD02) {
