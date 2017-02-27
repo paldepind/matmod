@@ -139,7 +139,7 @@ printkObservations <- function(rows) {
     c = kObservations(rows)
     html(int("Antal observationer: $ k = `c$k` $"))
     html("Estimeret varians")
-    eq(int("s_1^2 = `c$s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
+    eq(int("s_1^2 = \\frac{SSD_1}{f_1} = \\frac{SSD_{(1)}+...+SSD_{(k)}}{f_{(1)} + ... + f_{(k)}}  = `c$s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
     eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `c$n1`"))
     eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `c$f1`"))
     eq(int("SSD_1 = `c$SSD1`"))
@@ -153,7 +153,7 @@ printkObservations <- function(rows) {
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
     if (c$pObs1 > 0.05) {
-        html("Da $p_{Obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html(int("<h2>Konfidensinterval for variansen $\\sigma^2$</h2>"))
 
         eq(int("\\chi^2_{0.975}(`c$f1`) = `c$chiStart`"))
@@ -267,7 +267,7 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
     eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
     eq(int("t_{0.975}(n - 2) = `c$t975`"))
-    eq(int("s_{02}^2 = `c$s02`"))
+    eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02`"))
     eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
     eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
 
