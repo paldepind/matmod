@@ -8,6 +8,18 @@ allows them to print formatted output.
 
 Install R and Jupyter.
 
+### Installing R
+#### OSX
+##### Brew
+`brew tap homebrew/science`
+`brew install r`
+
+### Installing python
+#### OSX
+##### Brew
+`brew install python3`
+
+
 Then, run the following in R:
 
 ```
