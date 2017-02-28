@@ -8,11 +8,19 @@ allows them to print formatted output.
 
 Install R and Jupyter.
 
-Then, run the following in R:
+### Installing R
+#### OSX
+##### Brew
+`brew tap homebrew/science`
+`brew install r`
 
-```
-install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'))
-devtools::install_github('IRkernel/IRkernel')
-IRkernel::installspec()  # to register the kernel in the current R installation
-install.packages(c('gsubfn', 'testthat'))
-```
+### Installing python
+#### OSX
+##### Brew
+`brew install python3`
+
+### Installing Jupyter
+`pip3 install jupyter`
+
+### Installing R-dependencies
+Run `R -f install.R`
