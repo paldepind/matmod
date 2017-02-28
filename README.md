@@ -24,3 +24,9 @@ Install R and Jupyter.
 
 ### Installing R-dependencies
 Run `R -f install.R`
+
+## Running
+To run, do `jupyter notebook` in the project root directory.
+
+In the webbrowser, click new-\>R. run `source("R/functions.R")`. Use shift+enter to
+issue command.
