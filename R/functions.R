@@ -148,7 +148,7 @@ printkObservations <- function(rows) {
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
     eq(int("C = 1 + \\frac{1}{3(k-1)} \\left(\\left(\\sum\\limits_{i=1}^{k}\\frac{1}{f_{(i)}}\\right) - \\frac{1}{f_1}\\right) = `c$C`"))
     html("Teststørrelsen bliver")
-    eq(int("-2 \\ln(Q(x)) = f_1 \\ln s_1^2 - \\sum\\limits_{i=1}^{k}f_{(i)} \\ln s^2_{(i)} = `c$lnQx`"))
+    eq(int("-2 \\ln(Q(x)) = f_1 \\ln s_1^2 - \\sum\\limits_{i=1}^{k}f_{(i)} \\ln s^2_{(i)} = `c$lnQx` \\sim\\sim \\chi^2(`c$k - 1`)"))
     eq(int("Ba = \\frac{-2 \\ln(Q(x))}{C} = `c$Ba`"))
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
@@ -214,6 +214,35 @@ linearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     ));
 }
 
+alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"
+
+betaDistribution = "N(\\beta, \\frac{\\sigma^2}{SSD_t})"
+
+printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
+    c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
+    eq(int("n = `n`"))
+    eq(int("S_x = `Sx`"))
+    eq(int("S_t = `St`"))
+    eq(int("USS_x = `USSx`"))
+    eq(int("USS_t = `USSt`"))
+    eq(int("SSD_t = USS_t - \\frac{S_t^2}{n} = `c$SSDt`"))
+    eq(int("SSD_x = USS_x - \\frac{S_x^2}{n} = `c$SSDx`"))
+    eq(int("SP_{xt} = `SPxt`"))
+    eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
+    eq(int("\\bar{t}. = \\frac{S_x}{n} = `c$tMean`"))
+    eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
+    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
+    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` \\cdot `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
+    eq(int("t_{0.975}(n - 2) = `c$t975`"))
+    eq(int("SSD_{02} = SSD_x - \\frac{SPD_{xt}^2}{SSD_t} = `c.SSDx` - \\frac{`c.SPDxt`^2}{`c.SSDt`} = `c$SSD02`"))
+    eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02`"))
+    eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
+    eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
+
+    eq(int("C_{95}(\\beta) = \\hat{\\beta} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\beta}) = `c$betaEstimate` \\mp `c$t975*c$stdErrorBeta` = [`c$C95BetaStart`; `c$C95BetaEnd`]"))
+    eq(int("C_{95}(\\alpha) = \\hat{\\alpha} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\alpha}) = `c$alphaEstimate` \\mp `c$t975*c$stdErrorAlpha` = [`c$C95AlphaStart`; `c$C95AlphaEnd`]"))
+}
+
 fTest <- function(n, k, SSD1, SSD02) {
     ## f-test
     f02 = n - 2
@@ -245,34 +274,6 @@ printFTest <- function(n, k, SSD1, SSD02) {
     } else {
         html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen om lineær regression.")
     }
-}
-
-alphaDistribution = "N(\\alpha, \\sigma^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}))"
-
-betaDistribution = "N(\\beta, \\frac{\\sigma^2}{SSD_t})"
-
-printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
-    c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
-    eq(int("n = `n`"))
-    eq(int("S_x = `Sx`"))
-    eq(int("S_t = `St`"))
-    eq(int("USS_x = `USSx`"))
-    eq(int("USS_t = `USSt`"))
-    eq(int("SSD_t = USS_t - \\frac{S_t^2}{n} = `c$SSDt`"))
-    eq(int("SSD_x = USS_x - \\frac{S_x^2}{n} = `c$SSDx`"))
-    eq(int("SP_{xt} = `SPxt`"))
-    eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
-    eq(int("\\bar{t}. = \\frac{S_x}{n} = `c$tMean`"))
-    eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
-    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
-    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
-    eq(int("t_{0.975}(n - 2) = `c$t975`"))
-    eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02`"))
-    eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
-    eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
-
-    eq(int("C_{95}(\\beta) = \\hat{\\beta} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\beta}) = `c$betaEstimate` \\mp `c$t975*c$stdErrorBeta` = [`c$C95BetaStart`; `c$C95BetaEnd`]"))
-    eq(int("C_{95}(\\alpha) = \\hat{\\alpha} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\alpha}) = `c$alphaEstimate` \\mp `c$t975*c$stdErrorAlpha` = [`c$C95AlphaStart`; `c$C95AlphaEnd`]"))
 }
 
 
