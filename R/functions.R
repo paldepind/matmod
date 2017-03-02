@@ -90,14 +90,21 @@ printStuff <- function(n, S, USS) {
     eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`sigmaLower`, `sigmaUpper`]"))
 }
 
-calcC <- function(k, fs, f1) {
-    return(1 + 1/(3 * (k - 1)) * (Sum(Map(function(f) 1/f, fs)) - (1/f1)))
+calcC <- function(dataList) {
+    k = length(dataList)
+    f1 = Sum(Map(function(data) data$f, dataList))
+    return(1 + 1/(3 * (k - 1)) * (Sum(Map(function(data) 1/data$f, dataList)) - (1/f1)))
 }
 
 ## Bartletts test
-calcBa <- function(k, fs, f1, s1, dataList) {
+## DataList must contain f and variance
+calcBa <- function(dataList) {
+    k = length(dataList)
+    f1 = Sum(Map(function(data) data$f, dataList))
+    s1 = Sum(Map(function(data) (data$f * data$variance), dataList)) / f1
+
     denominator = f1 * log(s1) - Sum(Map(function(data) data$f * log(data$variance), dataList))
-    return(denominator / calcC(k, fs, f1))
+    return(denominator / calcC(dataList))
 }
 
 kObservations <- function(rows) {
@@ -111,9 +118,9 @@ kObservations <- function(rows) {
     s1 = SSD1 / Sum(Map(function(data) data$f, dataList));
     Sdot = Sum(Map(function(data) data$S, dataList))
     n1 = Sum(Map(function(data) data$n, dataList))
-    C = calcC(k, fs, f1)
+    C = calcC(dataList)
     lnQx = f1 * log(s1) - Sum(Map(function(data) data$f * log(data$variance), dataList))
-    Ba = calcBa(k, fs, f1, s1, dataList)
+    Ba = calcBa(dataList)
     pObs1 = 1 - pchisq(Ba, k - 1)
     SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (Sdot^2 / n1)
     ## variance2
