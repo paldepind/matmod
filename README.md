@@ -30,3 +30,18 @@ To run, do `jupyter notebook` in the project root directory.
 
 In the webbrowser, click new-\>R. run `source("R/functions.R")`. Use shift+enter to
 issue command.
+
+## Usage example
+
+```R
+observations = list(
+    c(230, 239, 251),
+    c(256, 259, 265),
+    c(266, 273, 280),
+    c(287, 295, 302),
+    c(301, 310, 317),
+    c(307, 313, 325),
+    c(324, 330, 338)
+)
+printkObservations(observations)
+```
