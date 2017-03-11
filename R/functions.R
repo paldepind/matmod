@@ -21,6 +21,29 @@ int <- fn$identity
 ##    x
 ## }
 
+calcSSD <- function(n, USS, S) {
+    return (USS - S^2 / n) # sum of squares of deviations
+}
+
+# Calculates everything that can be derived from n, S and USS
+observation <- function(n, S, USS) {
+    f = n - 1
+    SSD = calcSSD(n, USS, S)
+    mean = S / n
+    variance = SSD / (n - 1)
+    StdError <- sqrt(variance / n)
+    varianceLower <- (f * variance) / qchisq(0.975, f);
+    varianceUpper <- (f * variance) / qchisq(0.025, f);
+    meanDelta = qt(0.975, f) * StdError
+    meanLower = mean - meanDelta
+    meanUpper = mean + meanDelta
+    return(list(
+        n = n, f = f, S = S, USS = USS, SSD = SSD, mean = mean, variance = variance,
+        StdError = StdError, varianceLower = varianceLower, varianceUpper = varianceUpper,
+        meanLower = meanLower, meanUpper = meanUpper, meanDelta = meanDelta
+    ))
+}
+
 Sum <- function(list) Reduce("+", list)
 
 ## to ease migration from Octave
@@ -35,26 +58,28 @@ t <- function(meanEstimated, meanTry, variance, n) {
     return((meanEstimated - meanTry) / sqrt(variance / n));
 }
 
-## The likelihood ratio test size
-Q <- function(mean, meanGuess, variance, n) {
-    return(((1 + (t(mean, meanGuess, variance, n)^2)) / (n - 1))^(n / 2));
-}
-
-calcSSD <- function(n, USS, S) {
-    return (USS - S^2 / n) # sum of squares of deviations
+printSingleObservation <- function(n, S, USS) {
+    obs = observation(n, S, USS)
+    eq(int("f = n - 1 = `obs$f`"))
+    eq(int("SSD = USS - S^2 = `obs$SSD`"))
+    html("Estimeret middelværdi")
+    eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
+    eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`obs$variance` / `obs$n`} = `obs$StdError`"))
+    html("95% konfidensinterval for $\\mu$");
+    eq(interpolate("c_{95}(\\mu) = \\bar{x.} \\mp t_{0.975}(f) StdError = `obs$mean` \\mp `obs$meanDelta` = [`obs$meanLower`; `obs$meanUpper`]"))
+    html("Estimeret varians")
+    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance`"))
+    html("Estimeret spredning")
+    eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(obs$variance)`"))
+    html("Konfidensinterval for $\\sigma^2$")
+    eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`obs$varianceLower`, `obs$varianceUpper`]"))
 }
 
 standardCalculations <- function(obs) {
     n = length(obs)
-    f = n - 1
     S = Sum(obs)
     USS = Sum(Map(function(data) data^2, obs))
-    SSD = calcSSD(n, USS, S)
-    mean = S / n
-    variance = SSD / (n - 1)
-    return(list(
-        n = n, f = f, S = S, USS = USS, SSD = SSD, mean = mean, variance = variance
-    ))
+    return(observation(n, S, USS))
 }
 
 printStandardCalculations <- function(obs) {
@@ -129,17 +154,22 @@ kObservations <- function(rows) {
     s2 = SSD2 / (k-1)
     F = s2 / s1
     pObs2 = 1 - pf(F, k - 1, n1 - k)
-    
+
     chiStart = qchisq(1-(0.05/2), f1)
     chiEnd = qchisq((0.05/2), f1)
     C95Start = (f1*s1)/chiStart
     C95End = (f1*s1)/chiEnd
-    
+
     return(list(
         k = k, s1 = s1, n1 = n1, f1 = f1, SSD1 = SSD1, C = C, lnQx = lnQx, Ba = Ba, pObs1 = pObs1,
         s2 = s2, F = F, pObs2 = pObs2, Sdot = Sdot, SSD2 = SSD2, chiStart = chiStart,
         chiEnd = chiEnd, C95Start = C95Start, C95End = C95End
     ))
+}
+
+## The likelihood ratio test size
+Q <- function(mean, meanGuess, variance, n) {
+    return(((1 + (t(mean, meanGuess, variance, n)^2)) / (n - 1))^(n / 2));
 }
 
 printkObservations <- function(rows) {
@@ -174,7 +204,7 @@ printkObservations <- function(rows) {
 \\frac{`c$f1` \\cdot `c$s1`}{\\chi^2_{\\frac{0.05}{2}}(`c$f1`)}
 \\Rightarrow
  `c$C95Start` \\leq \\sigma^2 \\leq `c$C95End` "))
-        
+
         html("<h2>Test af hypotese om ens middelværdi</h2>")
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
         eq(int("S. = `c$SSD1`"))
@@ -187,7 +217,7 @@ printkObservations <- function(rows) {
         } else {
             html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
         }
-        
+
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
         ##TODO html("Test fælles middelværdi med ikke fælles varians.")
@@ -322,4 +352,3 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
 }
-

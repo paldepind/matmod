@@ -1,3 +1,19 @@
+expectRoughlyEqual <- function(a, b) {
+    expect_equal(a, b, tolerance = 0.002)
+}
+
+describe("single observation row", {
+    it("works with data from page 54 in book (also on slide 2)", {
+        obs = observation(n = 40, S = 1666, USS = 71468)
+        expectRoughlyEqual(obs$mean, 41.65)
+        expectRoughlyEqual(obs$variance, 53.31)
+        expectRoughlyEqual(obs$varianceLower, 35.77)
+        expectRoughlyEqual(obs$varianceUpper, 87.89)
+        expectRoughlyEqual(obs$meanLower, 39.31)
+        expectRoughlyEqual(obs$meanUpper, 43.99)
+    })
+})
+
 describe("kObservations", {
     observations = list(obs1 = list(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288),
                         obs2 = list(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272),
