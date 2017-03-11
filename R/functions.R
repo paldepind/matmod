@@ -71,7 +71,7 @@ printSingleObservation <- function(obs) {
     html("95% konfidensinterval for $\\mu$");
     eq(interpolate("c_{95}(\\mu) = \\bar{x.} \\mp t_{0.975}(f) StdError = `obs$mean` \\mp `obs$meanDelta` = [`obs$meanLower`; `obs$meanUpper`]"))
     html("Estimeret varians")
-    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance`"))
+    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance` \\sim\\sim \\sigma^2 \\chi^2 (n-1) / (n - 1)"))
     html("Estimeret spredning")
     eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(obs$variance)`"))
     html("Konfidensinterval for $\\sigma^2$")
