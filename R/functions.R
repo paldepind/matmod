@@ -8,18 +8,10 @@ options("scipen" = 10)
 ## handy alias for `fn` from gsubfn
 interpolate <- fn$identity
 int <- fn$identity
-
-## list <- structure(NA,class="result")
-## "[<-.result" <- function(x,...,value) {
-##    args <- as.list(match.call())
-##    args <- args[-c(1:2,length(args))]
-##    length(value) <- length(args)
-##    for(i in seq(along=args)) {
-##      a <- args[[i]]
-##      if(!missing(a)) eval.parent(substitute(a <- v,list(a=a,v=value[[i]])))
-##    }
-##    x
-## }
+Sum <- function(list) Reduce("+", list)
+html <- function(...) display_html(paste(...))
+eq <- function(...)
+    display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
 
 calcSSD <- function(n, USS, S) {
     return (USS - S^2 / n) # sum of squares of deviations
@@ -44,22 +36,33 @@ observation <- function(n, S, USS) {
     ))
 }
 
-Sum <- function(list) Reduce("+", list)
-
-## to ease migration from Octave
-## printf <- function(...) cat(sprintf(...))
-
-html <- function(...) display_html(paste(...))
-eq <- function(...)
-    display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
-
-# t-test
-t <- function(meanEstimated, meanTry, variance, n) {
-    return((meanEstimated - meanTry) / sqrt(variance / n));
+testMeanHypothesis <- function(obs, testMean) {
+    tTestSize = t(obs$mean, testMean, obs$variance, obs$n)
+    p_obs = 2 * (1 - pt(tTestSize, obs$f))
+    conclusion = p_obs > 0.005
+    return(list(
+        tTestSize = tTestSize, p_obs = p_obs, conclusion = conclusion
+    ))
 }
 
-printSingleObservation <- function(n, S, USS) {
-    obs = observation(n, S, USS)
+printTestMeanHypothesis <- function(obs, testMean) {
+    result = testMeanHypothesis(obs, testMean)
+    html("<h2>Tester hypotese om middelværdi</h2>")
+    html("Vi laver en $t$-test.")
+    eq(int("H_0: \\mu = \\mu_0 = `testMean`"))
+    html("$ t $-teststørrelsen bliver")
+    html(int("
+$ t(x) = \\frac{\\bar{x}. - \\mu_0}{\\sqrt{s^2 / n}} = \\frac{`obs$mean` - `testMean`}{\\sqrt{`obs$variance` / `obs$n`}} = `result$tTestSize` $"))
+    html("testsandsynligheden bliver")
+    eq(int("p_{obs}(x) = 2(1 - F_{t(n-1)}(| t(x) |)) = F_{f(`obs$f`)}(|t(`result$tTestSize`)|)) = `result$p_obs`"))
+    if (result$conclusion == TRUE) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}
+
+printSingleObservation <- function(obs) {
     eq(int("f = n - 1 = `obs$f`"))
     eq(int("SSD = USS - S^2 = `obs$SSD`"))
     html("Estimeret middelværdi")
@@ -73,6 +76,11 @@ printSingleObservation <- function(n, S, USS) {
     eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(obs$variance)`"))
     html("Konfidensinterval for $\\sigma^2$")
     eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`obs$varianceLower`, `obs$varianceUpper`]"))
+}
+
+# t-test
+t <- function(meanEstimated, meanTry, variance, n) {
+    return((meanEstimated - meanTry) / sqrt(variance / n));
 }
 
 standardCalculations <- function(obs) {

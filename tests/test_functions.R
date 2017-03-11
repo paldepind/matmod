@@ -14,6 +14,16 @@ describe("single observation row", {
     })
 })
 
+describe("test hypothesis about mean", {
+    it("works with data from page 54 in book (also on slide 2)", {
+        obs = observation(n = 40, S = 1666, USS = 71468)
+        result = testMeanHypothesis(obs, 40)
+        expectRoughlyEqual(result$tTestSize, 1.429)
+        expectRoughlyEqual(result$p_obs, 0.161)
+        expect_equal(result$conclusion, TRUE)
+    })
+})
+
 describe("kObservations", {
     observations = list(obs1 = list(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288),
                         obs2 = list(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272),
