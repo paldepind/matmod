@@ -360,3 +360,43 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
 }
+
+matrixMap <- function(f, m) {
+  m2 <- m
+  for (r in seq(nrow(m2)))
+    for (c in seq(ncol(m2)))
+      m2[[r, c]] <- f(m[r, c], r, c)
+  return(m2)
+}
+
+testHomogeneity <- function(data) {
+    s = ncol(data)
+    r = nrow(data)
+    x. = colSums(data)
+    n = rowSums(data)
+    n. = sum(data)
+    ## expected = matrixMap(data, function(x, i, j) int("`x` * `x.[j]` / `n.`"))
+    expected = matrixMap(function(x, i, j) n[i] * x.[j] / n., data)
+    twoLnQ = 2 * sum(matrixMap(function(x, i, j) x * log(x / expected[i, j]), data))
+    ## return(twoLnQ)
+    p_obs = 1 - pchisq(twoLnQ, (s - 1) * (r - 1))
+    conclusion = p_obs > 0.005
+    return(list(s = s, r = r, expected = expected, twoLnQ = twoLnQ, p_obs = p_obs, conclusion = conclusion))
+}
+
+printTestHomogeneity <- function(data) {
+    r = testHomogeneity(data)
+    html("<b>data</b>")
+    html(repr_html(data))
+    eq(int("s = `r$s`"))
+    eq(int("r = `r$r`"))
+    html("<b>e</b>")
+    html(repr_html(r$expected))
+    eq(int("-ln(Q(x)) = 2 \\sum\\limits_{i=1}^{r} \\sum\\limits_{j=1}^{s} x_{ij} ln (\\frac{x_{ij}}{e_{ij}}) = `r$twoLnQ`"))
+    eq(int("p_{obs}(x) = 1 - F_{\\chi^2(r - 1)(s - 1)}(- 2 ln (Q(x))) = `r$p_obs`"))
+    if (r$conclusion == TRUE) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}

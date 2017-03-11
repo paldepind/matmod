@@ -117,3 +117,13 @@ describe("fTest", {
     expect_equal(result$Fx, 2.57, tolerance = 0.005)
     expect_equal(result$pObs, 0.14, tolerance = 0.005)
 })
+
+describe("multinomial distributions", {
+    it("can test homogeneity of several multinomial distributions", {
+        ## Data from page 322-323 in the wonderful book
+        data = matrix(c(23, 20, 12, 5, 6, 9), nrow = 2, ncol = 3)
+        result = testHomogeneity(data)
+        expectRoughlyEqual(result$twoLnQ, 3.129)
+        expectRoughlyEqual(result$p_obs, 0.209)
+    })
+})
