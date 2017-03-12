@@ -119,6 +119,21 @@ describe("fTest", {
 })
 
 describe("multinomial distributions", {
+    it("can estimate pi", {
+        ## Data from example 7.1 page 301 and 312
+        vector = c(315, 101, 108, 32)
+        estimate = estimatePi(vector)
+        expectRoughlyEqual(estimate[1], 0.5665)
+        expectRoughlyEqual(estimate[2], 0.1817)
+        expectRoughlyEqual(estimate[3], 0.1942)
+        expectRoughlyEqual(estimate[4], 0.0576)
+    })
+    it("can calculate confidence interval for component of pi", {
+        ## Data from page 315
+        interval = piConfidenceInterval(219, 400)
+        expectRoughlyEqual(interval$lower, 0.4985)
+        expectRoughlyEqual(interval$upper, 0.5956)
+    })
     it("can test homogeneity of several multinomial distributions", {
         ## Data from page 322-323 in the wonderful book
         data = matrix(c(23, 20, 12, 5, 6, 9), nrow = 2, ncol = 3)

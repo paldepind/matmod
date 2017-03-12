@@ -369,6 +369,36 @@ matrixMap <- function(f, m) {
   return(m2)
 }
 
+vectorToString <- function(vector) {
+    return(paste("(", paste(vector, collapse = ", "), ")"))
+}
+
+estimatePi <- function(vector) {
+    return(vector / sum(vector))
+}
+
+printEstimatePi <- function(vector) {
+    estimate = estimatePi(vector)
+    eq(int("\\pmb{\\pi} \\leftarrow \\pmb{\\hat{\\pi}}(\\pmb{x}) = (\\frac{x_1}{n}, \\dots, \\frac{x_j}{n}, \\dots, \\frac{x_k}{n})^* = `vectorToString(estimate)`"))
+}
+
+piConfidenceInterval <- function(x, n) {
+    subExpr = 1.96 * sqrt((x*(n - x) / n) + (1.96^2/4))
+    lower = 1 / (n + 1.96^2) * (x + (1.96^2 / 2) - subExpr)
+    upper = 1 / (n + 1.96^2) * (x + (1.96^2 / 2) + subExpr)
+    return(list(lower = lower, upper = upper))
+}
+
+printPiInfo <- function(vector) {
+    printEstimatePi(vector)
+    s = length(vector)
+    html(int("Konfidens intervallerne for de `s` komponenter i $ \\pmb{\\pi} $"))
+    for (i in 1:s) {
+        int = piConfidenceInterval(vector[i], sum(vector))
+        eq(int("c_{0.95}(\\pi_`i`) = [`int$lower`, `int$upper`]"))
+    }
+}
+
 testHomogeneity <- function(data) {
     s = ncol(data)
     r = nrow(data)
@@ -381,21 +411,30 @@ testHomogeneity <- function(data) {
     ## return(twoLnQ)
     p_obs = 1 - pchisq(twoLnQ, (s - 1) * (r - 1))
     conclusion = p_obs > 0.005
-    return(list(s = s, r = r, expected = expected, twoLnQ = twoLnQ, p_obs = p_obs, conclusion = conclusion))
+    return(list(s = s, r = r, x. = x., expected = expected, twoLnQ = twoLnQ, p_obs = p_obs, conclusion = conclusion))
 }
 
 printTestHomogeneity <- function(data) {
     r = testHomogeneity(data)
+    html("<h2>Tester hypotese om homogenitet")
+    eq(int("M_0: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) \\sim m(n_i, \\pi_i)"))
+    eq(int("H_{01}: \\pmb{\\pi}_1 = \\dots = \\pmb{\\pi}_`r$r` = \\pmb{\\pi}"))
+    html("Vi ønsker at gå til modellen")
+    eq(int("M_1: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) \\sim m(n_i, \\pi)"))
+    eq(int("s = `r$s` \\quad \\text{(antal søjler)}"))
+    eq(int("r = `r$r` \\quad \\text{(antal rækker)}"))
     html("<b>data</b>")
     html(repr_html(data))
-    eq(int("s = `r$s`"))
-    eq(int("r = `r$r`"))
-    html("<b>e</b>")
+    html("<b>e</b> &nbsp (forventede værdier under hypotese)")
     html(repr_html(r$expected))
-    eq(int("-ln(Q(x)) = 2 \\sum\\limits_{i=1}^{r} \\sum\\limits_{j=1}^{s} x_{ij} ln (\\frac{x_{ij}}{e_{ij}}) = `r$twoLnQ`"))
+    html(int("Den mindste forventede værdi er `min(r$expected)`, denne skal helst være større end 5"))
+    eq(int("-2ln(Q(x)) = 2 \\sum\\limits_{i=1}^{r} \\sum\\limits_{j=1}^{s} x_{ij} ln (\\frac{x_{ij}}{e_{ij}}) = `r$twoLnQ`"))
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(r - 1)(s - 1)}(- 2 ln (Q(x))) = `r$p_obs`"))
     if (r$conclusion == TRUE) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+        html("Vi har defor nu kun én $ \\pmb{\\pi} $.")
+        ## display_html(r$x.)
+        printPiInfo(r$x.)
     } else {
         html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
     }
