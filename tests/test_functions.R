@@ -128,6 +128,14 @@ describe("multinomial distributions", {
         expectRoughlyEqual(estimate[3], 0.1942)
         expectRoughlyEqual(estimate[4], 0.0576)
     })
+    it("can test probability vector", {
+        ## Data from example 7.1 page 301 and 313
+        vector = c(315, 101, 108, 32)
+        guess = c(9/16, 3/16, 3/16, 1/16)
+        r = testProbabilityVector(vector, guess)
+        expectRoughlyEqual(r$twoLnQ, 0.4754)
+        expectRoughlyEqual(r$p_obs, 0.924)
+    })
     it("can calculate confidence interval for component of pi", {
         ## Data from page 315
         interval = piConfidenceInterval(219, 400)

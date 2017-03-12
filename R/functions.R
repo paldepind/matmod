@@ -399,6 +399,24 @@ printPiInfo <- function(vector) {
     }
 }
 
+testProbabilityVector <- function(data, guess) {
+    k = length(data)
+    estimate = estimatePi(data)
+    expected = guess * sum(data)
+    twoLnQ = 2 * Sum(Map(function(j) data[j] * log(data[j] / expected[j]), 1:k))
+    p_obs = 1 - pchisq(twoLnQ, (k - 1))
+    return(list(expected = expected, twoLnQ = twoLnQ, p_obs = p_obs))
+}
+
+printTestProbabilityVector <- function(data, guess) {
+    r = testProbabilityVector(data, guess)
+    table = matrix(c(data, r$expected), nrow = 2, byrow = TRUE, dimnames = list(c("observeret", "forventede")))
+    eq(int("H_0: \\pmb{\\pi} = \\pmb{\\pi}_0 = `vectorToString(guess)`"))
+    html(repr_html(table))
+    eq(int("-2lnQ(\\pmb{x}) = \\sum\\limits_{j=1}^{k} x_j ln(\\frac{x_j}{e_j}) = `r$twoLnQ`"))
+    eq(int("p_{obs}(\\pmb{x}) = 1 - F_{\\chi^2(k - 1 - d)}(-2 ln(Q(\\pmb{x})))' = `r$p_obs`"))
+}
+
 testHomogeneity <- function(data) {
     s = ncol(data)
     r = nrow(data)
