@@ -64,7 +64,7 @@ $ t(x) = \\frac{\\bar{x}. - \\mu_0}{\\sqrt{s^2 / n}} = \\frac{`obs$mean` - `test
 
 printSingleObservation <- function(obs) {
     eq(int("f = n - 1 = `obs$f`"))
-    eq(int("SSD = USS - S^2 = `obs$SSD`"))
+    eq(int("SSD = USS - \\frac{S^2}{n} = `obs$SSD`"))
     html("Estimeret middelværdi")
     eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
     eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`obs$variance` / `obs$n`} = `obs$StdError`"))
@@ -109,7 +109,7 @@ printStuff <- function(n, S, USS) {
     sigmaUpper <- (f * variance) / qchisq(0.025, f);
 
     eq(int("f = n - 1 = `f`"))
-    eq(int("SSD = USS - S^2 = `SSD`"))
+    eq(int("SSD = USS - \\frac{S^2}{n} = `SSD`"))
     html("Estimeret middelværdi")
     eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`S`}{`n`} = `mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
     eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`variance` / `n`} = `StdError`"))
@@ -353,8 +353,8 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     c = twoObservations(n1, S1, USS1, n2, S2, USS2)
     eq(int("f_1 = n_1 - 1 = `c$f1`"))
     eq(int("f_2 = n_2 - 1 = `c$f2`"))
-    eq(int("SSD_1 = USS_1 - \frac{S_1^2}{n_1} = `c$SSD1`"))
-    eq(int("SSD_2 = USS_2 - \frac{S_2^2}{n_2} = `c$SSD2`"))
+    eq(int("SSD_1 = USS_1 - \\frac{S_1^2}{n_1} = `c$SSD1`"))
+    eq(int("SSD_2 = USS_2 - \\frac{S_2^2}{n_2} = `c$SSD2`"))
     eq(int("s_{(1)}^2 = \\frac{SSD_1}{f_1} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
     eq(int("s_{(2)}^2 = \\frac{SSD_2}{f_2} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
