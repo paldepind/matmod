@@ -324,8 +324,10 @@ printFTest <- function(n, k, SSD1, SSD02) {
 twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     SSD1 = calcSSD(n1, USS1, S1)
     SSD2 = calcSSD(n2, USS2, S2)
+
     f1 = n1 - 1
     f2 = n2 - 1
+
     variance1 = SSD1 / f1
     variance2 = SSD2 / f2
 
@@ -343,20 +345,28 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     maxVariance = max(variance1, variance2)
     F = maxVariance / minVariance
     pObs = 2 * (1 - pf(F, fNume, fDeno))
+
+    fSum = f1+f2
+    jointVariance = (SSD1 + SSD2) / (f1 + f2)
+
+    cLVarLower <- (fSum * jointVariance) / qchisq(0.975, fSum);
+    cLVarUpper <- (fSum * jointVariance) / qchisq(0.025, fSum);
+
     return(list(f1 = f1, SSD1 = SSD1, variance1 = variance1, mean1 = mean1,
                 f2 = f2, SSD2 = SSD2, variance2 = variance2, mean2 = mean2,
                 minVariance = minVariance, maxVariance = maxVariance, F = F, pObs = pObs,
-                fNume = fNume, fDeno = fDeno))
+                fNume = fNume, fDeno = fDeno,
+                jointVariance = jointVariance, cLVarLower = cLVarLower, cLVarUpper = cLVarUpper))
 }
 
 printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     c = twoObservations(n1, S1, USS1, n2, S2, USS2)
-    eq(int("f_1 = n_1 - 1 = `c$f1`"))
-    eq(int("f_2 = n_2 - 1 = `c$f2`"))
-    eq(int("SSD_1 = USS_1 - \\frac{S_1^2}{n_1} = `c$SSD1`"))
-    eq(int("SSD_2 = USS_2 - \\frac{S_2^2}{n_2} = `c$SSD2`"))
-    eq(int("s_{(1)}^2 = \\frac{SSD_1}{f_1} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
-    eq(int("s_{(2)}^2 = \\frac{SSD_2}{f_2} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
+    eq(int("f_{(1)} = n_1 - 1 = `c$f1`"))
+    eq(int("f_{(2)} = n_2 - 1 = `c$f2`"))
+    eq(int("SSD_{(1)} = USS_1 - \\frac{S_1^2}{n_1} = `c$SSD1`"))
+    eq(int("SSD_{(2)} = USS_2 - \\frac{S_2^2}{n_2} = `c$SSD2`"))
+    eq(int("s_{(1)}^2 = \\frac{SSD_{(1)}}{f_{(1)}} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
+    eq(int("s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
     eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
     html("<h2>Tester hypotese om ens varians</h2>")
@@ -366,6 +376,11 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("p_{obs}(x) = 2 (1 - F_{F(f_{`c$fNume`}, f_{`c$fDeno`})}(`c$F`)) = `c$pObs`"));
     if (c$pObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
+        html("Den fælles varians er da:")
+        eq(int("s_1^2=\\frac{\\sum_{i=1}^kSSD_{(i)}}{\\sum_{i=1}^kf_{(i)}}=`c$jointVariance`"))
+        html("Og har 95%-konfidensintervallet:")
+        eq(interpolate("C_{0.95}(\\sigma^2)=\\bigg[\\frac{f_1s_1^2}{\\chi_{1-\\alpha/2}^2(f_1)} \\ , \\ \\frac{f_1s_1^2}{\\chi_{\\alpha/2}^2(f_1)}\\bigg]
+            =[`c$cLVarLower`, `c$cLVarUpper`]"))
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
