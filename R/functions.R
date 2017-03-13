@@ -352,7 +352,7 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
 printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     c = twoObservations(n1, S1, USS1, n2, S2, USS2)
     eq(int("f_1 = n_1 - 1 = `c$f1`"))
-    eq(int("f_2 = n_2 - 2 = `c$f2`"))
+    eq(int("f_2 = n_2 - 1 = `c$f2`"))
     eq(int("SSD_1 = USS_1 - \frac{S_1^2}{n_1} = `c$SSD1`"))
     eq(int("SSD_2 = USS_2 - \frac{S_2^2}{n_2} = `c$SSD2`"))
     eq(int("s_{(1)}^2 = \\frac{SSD_1}{f_1} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
