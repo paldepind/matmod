@@ -328,15 +328,25 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     f2 = n2 - 1
     variance1 = SSD1 / f1
     variance2 = SSD2 / f2
+
+    if(variance1>variance2){
+        fNume = f1
+        fDeno = f2
+    } else {
+        fNume = f2
+        fDeno = f1
+    }
+
     mean1 = S1 / n1
     mean2 = S2 / n2
     minVariance = min(variance1, variance2)
     maxVariance = max(variance1, variance2)
     F = maxVariance / minVariance
-    pObs = 2 * (1 - pf(F, f1, f2))
+    pObs = 2 * (1 - pf(F, fNume, fDeno))
     return(list(f1 = f1, SSD1 = SSD1, variance1 = variance1, mean1 = mean1,
                 f2 = f2, SSD2 = SSD2, variance2 = variance2, mean2 = mean2,
-                minVariance = minVariance, maxVariance = maxVariance, F = F, pObs = pObs))
+                minVariance = minVariance, maxVariance = maxVariance, F = F, pObs = pObs,
+                fNume = fNume, fDeno = fDeno))
 }
 
 printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
@@ -351,9 +361,9 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
     html("<h2>Tester hypotese om ens varians</h2>")
     html("F-teststørrelsen er")
-    eq(int("F = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$f1`, `c$f2`)"))
+    eq(int("F = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
     html("Testsandsynligheden beregnes som")
-    eq(int("p_{obs}(x) = 2 (1 - F_{F(f_{`c$f1`}, f_{`c$f2`})}(`c$F`)) = `c$pObs`"));
+    eq(int("p_{obs}(x) = 2 (1 - F_{F(f_{`c$fNume`}, f_{`c$fDeno`})}(`c$F`)) = `c$pObs`"));
     if (c$pObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
     } else {
