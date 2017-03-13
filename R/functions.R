@@ -78,7 +78,7 @@ printSingleObservation <- function(obs) {
     eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`obs$varianceLower`, `obs$varianceUpper`]"))
 }
 
-# t-test
+# t-testsize
 t <- function(meanEstimated, meanTry, variance, n) {
     return((meanEstimated - meanTry) / sqrt(variance / n));
 }
@@ -329,7 +329,7 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     variance1 = SSD1 / f1
     variance2 = SSD2 / f2
 
-    if(variance1>variance2){
+    if (variance1 > variance2){
         fNume = f1
         fDeno = f2
     } else {
@@ -339,35 +339,56 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
 
     mean1 = S1 / n1
     mean2 = S2 / n2
+
+    # F-test 
     minVariance = min(variance1, variance2)
     maxVariance = max(variance1, variance2)
     F = maxVariance / minVariance
-    pObs = 2 * (1 - pf(F, fNume, fDeno))
+    FpObs = 2 * (1 - pf(F, fNume, fDeno))
+
+    # t-test
+    tTestsize = (mean1 - mean2) / sqrt((variance1 / n1 ) + (variance2 / n2))
+    fBar = (((variance1 / n1) + (variance2 / n2))^2) / ( ((variance1 / n1)^2 / f1) + ((variance2 / n2)^2 / f2) )
+    tpObs = 2 * (1 - pt(abs(tTestsize), fBar))
     return(list(f1 = f1, SSD1 = SSD1, variance1 = variance1, mean1 = mean1,
                 f2 = f2, SSD2 = SSD2, variance2 = variance2, mean2 = mean2,
-                minVariance = minVariance, maxVariance = maxVariance, F = F, pObs = pObs,
-                fNume = fNume, fDeno = fDeno))
+                minVariance = minVariance, maxVariance = maxVariance, F = F, FpObs = FpObs,
+                tpObs = tpObs, tTestsize = tTestsize, fBar = fBar, fNume = fNume, fDeno = fDeno))
 }
 
 printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     c = twoObservations(n1, S1, USS1, n2, S2, USS2)
     eq(int("f_1 = n_1 - 1 = `c$f1`"))
-    eq(int("f_2 = n_2 - 2 = `c$f2`"))
+    eq(int("f_2 = n_2 - 1 = `c$f2`"))
     eq(int("SSD_1 = USS_1 - S_1^2 = `c$SSD1`"))
     eq(int("SSD_2 = USS_2 - S_2^2 = `c$SSD2`"))
     eq(int("s_{(1)}^2 = \\frac{SSD_1}{f_1} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
     eq(int("s_{(2)}^2 = \\frac{SSD_2}{f_2} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
     eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
+    
     html("<h2>Tester hypotese om ens varians</h2>")
     html("F-teststørrelsen er")
-    eq(int("F = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
+    eq(int("F = \\frac{\\max(s_{(1)}^2, s_{(2)}^2)}{\\min(s_{(1)}^2, s_{(2)}^2)} = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
     html("Testsandsynligheden beregnes som")
-    eq(int("p_{obs}(x) = 2 (1 - F_{F(f_{`c$fNume`}, f_{`c$fDeno`})}(`c$F`)) = `c$pObs`"));
-    if (c$pObs > 0.05) {
+    eq(int("p_{obs}(x) = 2 (1 - F_{F(`c$fNume`, `c$fDeno`)}(`c$F`)) = `c$FpObs`"));
+    if (c$FpObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
+    }
+
+    html("<h2>Tester hypotese om ens middelværdi</h2>")
+    html("frihedsgraderne beregnes")
+    eq(int("\\bar{f} = \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } \\right )^2 }{ \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } \\right )^2 }{ f_{(1)} } + \\frac{ \\left ( \\frac{ s^2_{(2)} }{ n_2 }\\right )^2 }{ f_{(2)} }  } = `c$fBar`"))
+    html("t-teststørrelsen er")
+    eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+    html("Testsandsynligheden beregnes som")
+    eq(int("p_{obs}(x) = 2 \\left(1 - F_{t(\\bar{f})}\\left(\\lvert t(x)\\rvert\\right) \\right) = `c$tpObs`"));
+    if (c$tpObs > 0.05) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
     }
 }
 
