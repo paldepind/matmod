@@ -107,6 +107,8 @@ printStuff <- function(n, S, USS) {
     StdError <- variance / n;
     sigmaLower <- (f * variance) / qchisq(0.975, f);
     sigmaUpper <- (f * variance) / qchisq(0.025, f);
+    muLower <- mean - sqrt(variance/n)*qt(0.975, f);
+    muUpper <- mean + sqrt(variance/n)*qt(0.975, f);
 
     eq(int("f = n - 1 = `f`"))
     eq(int("SSD = USS - \\frac{S^2}{n} = `SSD`"))
@@ -114,7 +116,7 @@ printStuff <- function(n, S, USS) {
     eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`S`}{`n`} = `mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
     eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`variance` / `n`} = `StdError`"))
     html("95% konfidensinterval for $\\mu$");
-    eq(interpolate("c_{95}(\\mu) = \\bar{x.} \\mp t_{0.975}(f) StdError = `mean` \\mp `qt(0.975, f)*StdError`"))
+    eq(interpolate("c_{95}(\\mu) = [\\bar{x.} - \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f), \\bar{x.} + \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f)] =[`mean` - \\sqrt{\\frac{`variance`}{`n`}}\\cdot `qt(0.975, f)`, `mean` + \\sqrt{\\frac{`variance`}{`n`}}\\cdot `qt(0.975, f)`] =  [`muLower`, `muUpper`]"))
     html("Estimeret varians")
     eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`SSD`}{`f`} = `variance`"))
     html("Estimeret spredning")
