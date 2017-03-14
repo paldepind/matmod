@@ -11,7 +11,7 @@ int <- fn$identity
 Sum <- function(list) Reduce("+", list)
 html <- function(...) display_html(paste(...))
 eq <- function(...)
-    display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
+    display_latex(gsub("~", "\\sim", gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE), fixed = TRUE))
 align <- function(...)
     display_latex(gsub("<-", "\\leftarrow", paste("\\begin{align*}", ..., "\\end{align*}"), fixed = TRUE))
 
@@ -68,7 +68,7 @@ printSingleObservation <- function(obs) {
     eq(int("f = n - 1 = `obs$f`"))
     eq(int("SSD = USS - \\frac{S^2}{n} = `obs$SSD`"))
     html("Estimeret middelværdi")
-    eq(interpolate("\\mu <- \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
+    eq(interpolate("\\mu <- \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` ~~ N(\\mu, \\frac{\\sigma^2}{n})"))
     eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`obs$variance` / `obs$n`} = `obs$StdError`"))
     html("95% konfidensinterval for $\\mu$");
 
@@ -80,7 +80,7 @@ c_{95}(\\mu) &= [\\bar{x.} - \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f), \\bar{x.
              &= [`obs$meanLower`, `obs$meanUpper`]
 "))
     html("Estimeret varians")
-    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance` \\sim\\sim \\sigma^2 \\chi^2 (n-1) / (n - 1)"))
+    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance` ~~ \\sigma^2 \\chi^2 (n-1) / (n - 1)"))
     html("Estimeret spredning")
     eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(obs$variance)`"))
     html("Konfidensinterval for $\\sigma^2$")
@@ -173,7 +173,7 @@ printkObservations <- function(rows = NULL, data = NULL) {
     c = kObservations(rows, data)
     html(int("Antal observationer: $ k = `c$k` $"))
     html("Estimeret varians")
-    eq(int("s_1^2 = \\frac{SSD_1}{f_1} = \\frac{SSD_{(1)}+...+SSD_{(k)}}{f_{(1)} + ... + f_{(k)}}  = `c$s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
+    eq(int("s_1^2 = \\frac{SSD_1}{f_1} = \\frac{SSD_{(1)}+...+SSD_{(k)}}{f_{(1)} + ... + f_{(k)}}  = `c$s1` ~~ \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
     eq(int("n_1 = \\sum_{i=1}^{k} n_{(i)} = `c$n1`"))
     eq(int("f_1 = \\sum_{i=1}^{k} f_{(i)} = `c$f1`"))
     eq(int("SSD_1 = `c$SSD1`"))
@@ -182,7 +182,7 @@ printkObservations <- function(rows = NULL, data = NULL) {
     eq("H_{0\\sigma^2}: \\sigma_1^2 = \\dots = \\sigma_k^2 = \\sigma^2")
     eq(int("C = 1 + \\frac{1}{3(k-1)} \\left(\\left(\\sum\\limits_{i=1}^{k}\\frac{1}{f_{(i)}}\\right) - \\frac{1}{f_1}\\right) = `c$C`"))
     html("Teststørrelsen bliver")
-    eq(int("-2 \\ln(Q(x)) = f_1 \\ln s_1^2 - \\sum\\limits_{i=1}^{k}f_{(i)} \\ln s^2_{(i)} = `c$lnQx` \\sim\\sim \\chi^2(`c$k - 1`)"))
+    eq(int("-2 \\ln(Q(x)) = f_1 \\ln s_1^2 - \\sum\\limits_{i=1}^{k}f_{(i)} \\ln s^2_{(i)} = `c$lnQx` ~~ \\chi^2(`c$k - 1`)"))
     eq(int("Ba = \\frac{-2 \\ln(Q(x))}{C} = `c$Ba`"))
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = 1 - F_{\\chi^2(`c$k-1`)}(`c$Ba`) = `c$pObs1`"))
@@ -257,7 +257,7 @@ betaDistribution = "N(\\beta, \\frac{\\sigma^2}{SSD_t})"
 printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
     html("Model for lineær regression")
-    eq(int("M: X_i \\sim N(\\alpha + \\beta t_i, \\sigma^2), \\quad i = 1, \\dots, n "))
+    eq(int("M: X_i ~ N(\\alpha + \\beta t_i, \\sigma^2), \\quad i = 1, \\dots, n "))
     eq(int("n = `n`"))
     eq(int("S_x = `Sx`"))
     eq(int("S_t = `St`"))
@@ -269,12 +269,12 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("\\bar{x}. = \\frac{S_x}{n} = `c$xMean`"))
     eq(int("\\bar{t}. = \\frac{S_t}{n} = `c$tMean`"))
     eq(int("SPD_{xt} = SP_{xt} - \\frac{S_x S_t}{n} = `SPxt` - \\frac{`Sx` \\cdot `St`}{`n`} = `c$SPDxt`"))
-    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` \\sim\\sim `alphaDistribution`"))
-    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` \\cdot `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
+    eq(int("\\hat{\\beta} = \\frac{SPD_{xt}}{SSD_t} = \\frac{`c$SPDxt`}{`c$SSDt`} = `c$betaEstimate` ~~ `alphaDistribution`"))
+    eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` \\cdot `St`}{`n`} = `c$alphaEstimate` ~~ `betaDistribution`"))
     eq(int("t_{0.975}(n - 2) = `c$t975`"))
     eq(int("SSD_{02} = SSD_x - \\frac{SPD_{xt}^2}{SSD_t} = `c$SSDx` - \\frac{`c$SPDxt`^2}{`c$SSDt`} = `c$SSD02`"))
     html("estimat for varians")
-    eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02` \\sim\\sim \\sigma^2 \\chi^2(f_{02})/f_{02}"))
+    eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02` ~~ \\sigma^2 \\chi^2(f_{02})/f_{02}"))
     eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
     eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
 
@@ -337,7 +337,7 @@ printFTest <- function(n, k, SSD1, SSD02) {
     eq(int("s_1^2 = \\frac{SSD_1}{n - k} = \\frac{`SSD1`}{`n - k`} = `c$variance1`"))
     eq(int("s_2^2 = \\frac{SSD_2}{k - 2} = \\frac{`c$SSD2`}{`k - 2`} = `c$variance2`"))
     html("Teststørrelsen")
-    eq(int("F(x) = \\frac{s_2^2}{s_1^2} = `c$Fx` \\sim\\sim F(`k - 2`, `n - k`)"))
+    eq(int("F(x) = \\frac{s_2^2}{s_1^2} = `c$Fx` ~~ F(`k - 2`, `n - k`)"))
     html("Testsandsynligheden er")
     eq(int("p_{obs}(x) = 1 - F_{F(k-2, n-k)}(F(x)) = `c$pObs`"))
     if (c$testResult == TRUE) {
@@ -544,10 +544,10 @@ testHomogeneity <- function(data) {
 printTestHomogeneity <- function(data) {
     r = testHomogeneity(data)
     html("<h2>Tester hypotese om homogenitet")
-    eq(int("M_0: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) \\sim m(n_i, \\pi_i)"))
+    eq(int("M_0: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) ~ m(n_i, \\pi_i)"))
     eq(int("H_{01}: \\pmb{\\pi}_1 = \\dots = \\pmb{\\pi}_`r$r` = \\pmb{\\pi}"))
     html("Vi ønsker at gå til modellen")
-    eq(int("M_1: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) \\sim m(n_i, \\pi)"))
+    eq(int("M_1: \\pmb{X}_i = (X_{i1}, \\dots, X_{i `r$s`}) ~ m(n_i, \\pi)"))
     eq(int("s = `r$s` \\quad \\text{(antal søjler)}"))
     eq(int("r = `r$r` \\quad \\text{(antal rækker)}"))
     html("<b>data</b>")
