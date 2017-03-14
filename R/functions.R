@@ -125,11 +125,17 @@ calcBa <- function(dataList) {
     return(denominator / calcC(dataList))
 }
 
-kObservations <- function(rows) {
-    ## number of observations
-    k = length(rows)
-    dataList = Map(standardCalculations, rows)
-    ## display(dataList)
+kObservations <- function(rows = NULL, data = NULL) {
+    if (!is.null(rows)) {
+        ## number of observations
+        k = length(rows)
+        dataList = Map(standardCalculations, rows)
+    } else if (!is.null(data)) {
+        k = length(data)
+        dataList = Map(function(d) observation(d$n, d$S, d$USS), data)
+    } else {
+        return()
+    }
     fs = Map(function(data) data$f, dataList)
     f1 = Sum(fs);
     SSD1 = Sum(Map(function(data) data$SSD, dataList));
@@ -141,15 +147,13 @@ kObservations <- function(rows) {
     Ba = calcBa(dataList)
     pObs1 = 1 - pchisq(Ba, k - 1)
     SSD2 = Sum(Map(function(data) data$S^2 / data$n, dataList)) - (Sdot^2 / n1)
-    ## variance2
-    ## Print output
 
     s2 = SSD2 / (k-1)
     F = s2 / s1
     pObs2 = 1 - pf(F, k - 1, n1 - k)
 
-    chiStart = qchisq(1-(0.05/2), f1)
-    chiEnd = qchisq((0.05/2), f1)
+    chiStart = qchisq(1 - (0.05 / 2), f1)
+    chiEnd = qchisq((0.05 / 2), f1)
     C95Start = (f1*s1)/chiStart
     C95End = (f1*s1)/chiEnd
 
@@ -165,8 +169,8 @@ Q <- function(mean, meanGuess, variance, n) {
     return(((1 + (t(mean, meanGuess, variance, n)^2)) / (n - 1))^(n / 2));
 }
 
-printkObservations <- function(rows) {
-    c = kObservations(rows)
+printkObservations <- function(rows = NULL, data = NULL) {
+    c = kObservations(rows, data)
     html(int("Antal observationer: $ k = `c$k` $"))
     html("Estimeret varians")
     eq(int("s_1^2 = \\frac{SSD_1}{f_1} = \\frac{SSD_{(1)}+...+SSD_{(k)}}{f_{(1)} + ... + f_{(k)}}  = `c$s1` \\sim\\sim \\frac{\\sigma^2\\chi^2(`c$f1`)}{`c$f1`}"))
@@ -188,15 +192,17 @@ printkObservations <- function(rows) {
 
         eq(int("\\chi^2_{0.975}(`c$f1`) = `c$chiStart`"))
         eq(int("\\chi^2_{0.025}(`c$f1`) = `c$chiEnd`"))
-        eq(int("\\frac{f_1 s_1^2}{ \\chi^2_{1-\\frac{\\alpha}{2}}(f_1)}
-\\leq \\sigma^2 \\leq
+        align(int("
+\\frac{f_1 s_1^2}{ \\chi^2_{1-\\frac{\\alpha}{2}}(f_1) }
+\\leq & \\sigma^2 \\leq
 \\frac{f_1 s_1^2}{\\chi^2_{\\frac{\\alpha}{2}}(f_1)}
-\\Rightarrow
+\\Rightarrow \\\\
  \\frac{`c$f1`\\cdot `c$s1`}{\\chi^2_{1-\\frac{0.05}{2}}(`c$f1`)}
-\\leq \\sigma^2 \\leq
+\\leq & \\sigma^2 \\leq
 \\frac{`c$f1` \\cdot `c$s1`}{\\chi^2_{\\frac{0.05}{2}}(`c$f1`)}
-\\Rightarrow
- `c$C95Start` \\leq \\sigma^2 \\leq `c$C95End` "))
+\\Rightarrow \\\\
+ `c$C95Start` \\leq & \\sigma^2 \\leq `c$C95End`
+"))
 
         html("<h2>Test af hypotese om ens middelværdi</h2>")
         eq("H_{0\\mu}: \\mu_1 = \\dots = \\mu_k = \\mu")
