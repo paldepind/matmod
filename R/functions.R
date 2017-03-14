@@ -12,6 +12,8 @@ Sum <- function(list) Reduce("+", list)
 html <- function(...) display_html(paste(...))
 eq <- function(...)
     display_latex(gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE))
+align <- function(...)
+    display_latex(gsub("<-", "\\leftarrow", paste("\\begin{align*}", ..., "\\end{align*}"), fixed = TRUE))
 
 calcSSD <- function(n, USS, S) {
     return (USS - S^2 / n) # sum of squares of deviations
@@ -66,10 +68,17 @@ printSingleObservation <- function(obs) {
     eq(int("f = n - 1 = `obs$f`"))
     eq(int("SSD = USS - \\frac{S^2}{n} = `obs$SSD`"))
     html("Estimeret middelværdi")
-    eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
+    eq(interpolate("\\mu <- \\bar{x}. = \\frac{S}{n} = \\frac{`obs$S`}{`obs$n`} = `obs$mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
     eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`obs$variance` / `obs$n`} = `obs$StdError`"))
     html("95% konfidensinterval for $\\mu$");
-    eq(interpolate("c_{95}(\\mu) = \\bar{x.} \\mp t_{0.975}(f) StdError = `obs$mean` \\mp `obs$meanDelta` = [`obs$meanLower`; `obs$meanUpper`]"))
+
+    align(int("
+c_{95}(\\mu) &= [\\bar{x.} - \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f), \\bar{x.} + \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f)] \\\\
+             &= \\bar{x.} \\mp t_{0.975}(f) StdError \\\\
+             &= `obs$mean` \\mp \\sqrt{\\frac{`obs$variance`}{`obs$n`}} \\cdot `qt(0.975, obs$f)` \\\\
+             &= `obs$mean` \\mp `obs$meanDelta` \\\\
+             &= [`obs$meanLower`, `obs$meanUpper`]
+"))
     html("Estimeret varians")
     eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`obs$SSD`}{`obs$f`} = `obs$variance` \\sim\\sim \\sigma^2 \\chi^2 (n-1) / (n - 1)"))
     html("Estimeret spredning")
@@ -96,33 +105,7 @@ printStandardCalculations <- function(obs) {
     eq(int("n = `c$n`"))
     eq(int("S = `c$S`"))
     eq(int("USS = `c$USS`"))
-    printStuff(c$n, c$S, c$USS)
-}
-
-printStuff <- function(n, S, USS) {
-    mean <- S / n;
-    SSD = calcSSD(n, USS, S); # sum of squares of deviations
-    variance <- SSD / (n - 1); # usually denoted as s^2
-    f <- n - 1; # degrees of freedom
-    StdError <- variance / n;
-    sigmaLower <- (f * variance) / qchisq(0.975, f);
-    sigmaUpper <- (f * variance) / qchisq(0.025, f);
-    muLower <- mean - sqrt(variance/n)*qt(0.975, f);
-    muUpper <- mean + sqrt(variance/n)*qt(0.975, f);
-
-    eq(int("f = n - 1 = `f`"))
-    eq(int("SSD = USS - \\frac{S^2}{n} = `SSD`"))
-    html("Estimeret middelværdi")
-    eq(interpolate("\\mu \\leftarrow \\bar{x}. = \\frac{S}{n} = \\frac{`S`}{`n`} = `mean` \\sim\\sim N(\\mu, \\frac{\\sigma^2}{n})"))
-    eq(int("StdError = \\sqrt{s^2 / n} = \\sqrt{`variance` / `n`} = `StdError`"))
-    html("95% konfidensinterval for $\\mu$");
-    eq(interpolate("c_{95}(\\mu) = [\\bar{x.} - \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f), \\bar{x.} + \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f)] =[`mean` - \\sqrt{\\frac{`variance`}{`n`}}\\cdot `qt(0.975, f)`, `mean` + \\sqrt{\\frac{`variance`}{`n`}}\\cdot `qt(0.975, f)`] =  [`muLower`, `muUpper`]"))
-    html("Estimeret varians")
-    eq(interpolate("\\sigma^2 <- s^2 = \\frac{SSD}{f} = \\frac{`SSD`}{`f`} = `variance`"))
-    html("Estimeret spredning")
-    eq(interpolate("\\sigma <- s = \\sqrt{s^2} = `sqrt(variance)`"))
-    html("Konfidensinterval for $\\sigma^2$")
-    eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`sigmaLower`, `sigmaUpper`]"))
+    printSingleObservation(observation(c$n, c$S, c$USS))
 }
 
 calcC <- function(dataList) {
