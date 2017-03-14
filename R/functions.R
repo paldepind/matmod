@@ -374,21 +374,41 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     F = maxVariance / minVariance
     FpObs = 2 * (1 - pf(F, fNume, fDeno))
     # t-test
-    tTestsize = (mean1 - mean2) / sqrt((variance1 / n1 ) + (variance2 / n2))
-    fBar = (((variance1 / n1) + (variance2 / n2))^2) / ( ((variance1 / n1)^2 / f1) + ((variance2 / n2)^2 / f2) )
-    tpObs = 2 * (1 - pt(abs(tTestsize), fBar))
 
-    fSum = f1+f2
-    jointVariance = (SSD1 + SSD2) / (f1 + f2)
+    hasCommonVariance = FpObs > 0.05
+    fBar = (((variance1 / n1) + (variance2 / n2))^2) / ( ((variance1 / n1)^2 / f1) + ((variance2 / n2)^2 / f2) )
+    fSum = f1+f2 # f_1
+    jointVariance = (SSD1 + SSD2) / (f1 + f2) # s_1^2
 
     cLVarLower <- (fSum * jointVariance) / qchisq(0.975, fSum);
     cLVarUpper <- (fSum * jointVariance) / qchisq(0.025, fSum);
 
-    return(list(f1 = f1, SSD1 = SSD1, variance1 = variance1, mean1 = mean1,
-                f2 = f2, SSD2 = SSD2, variance2 = variance2, mean2 = mean2,
-                minVariance = minVariance, maxVariance = maxVariance, F = F, FpObs = FpObs,
-                tpObs = tpObs, tTestsize = tTestsize, fBar = fBar, fNume = fNume, fDeno = fDeno,
-                jointVariance = jointVariance, cLVarLower = cLVarLower, cLVarUpper = cLVarUpper))
+    if (hasCommonVariance) {
+        f = fSum # f_1
+        tTestsize = (mean1 - mean2) / sqrt(jointVariance * (1 / n1 ) + (1 / n2))
+        meanDiffStdError = sqrt(jointVariance * ((1 / n1) + (1 / n2)))
+    } else {
+        f = fBar # Use \bar{f}
+        tTestsize = (mean1 - mean2) / sqrt((variance1 / n1 ) + (variance2 / n2))
+        meanDiffStdError = sqrt(variance1 / n1 + variance2 / n2)
+    }
+    ## Calculate p_obs with `f` selected above
+    tpObs = 2 * (1 - pt(abs(tTestsize), f))
+
+    meanDifft975 = qt(0.975, f)
+    meanDiffDelta = meanDifft975 * meanDiffStdError
+    meanDiffStart = mean1 - mean2 - meanDiffDelta
+    meanDiffEnd = mean1 - mean2 + meanDiffDelta
+
+    return(list(
+        f1 = f1, SSD1 = SSD1, variance1 = variance1, mean1 = mean1,
+        f2 = f2, SSD2 = SSD2, variance2 = variance2, mean2 = mean2,
+        minVariance = minVariance, maxVariance = maxVariance, F = F, FpObs = FpObs,
+        tpObs = tpObs, tTestsize = tTestsize, fBar = fBar, fNume = fNume, fDeno = fDeno,
+        meanDiffStdError = meanDiffStdError, meanDifft975 = meanDifft975, f = f,
+        meanDiffStart = meanDiffStart, meanDiffEnd = meanDiffEnd, meanDiffDelta = meanDiffDelta,
+        jointVariance = jointVariance, cLVarLower = cLVarLower, cLVarUpper = cLVarUpper
+    ))
 }
 
 printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
@@ -401,28 +421,38 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
     eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
+    eq(int("\\bar{x_1}. - \\bar{x_2}. = `c$mean1` - `c$mean2` = `c$mean1 - c$mean2`"))
 
     html("<h2>Tester hypotese om ens varians</h2>")
     html("F-teststørrelsen er")
     eq(int("F = \\frac{\\max(s_{(1)}^2, s_{(2)}^2)}{\\min(s_{(1)}^2, s_{(2)}^2)} = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
     html("Testsandsynligheden beregnes som")
     eq(int("p_{obs}(x) = 2 (1 - F_{F(`c$fNume`, `c$fDeno`)}(`c$F`)) = `c$FpObs`"));
-    if (c$FpObs > 0.05) {
+    hasCommonVariance = c$FpObs > 0.05
+    if (hasCommonVariance) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html("Den fælles varians er da:")
         eq(int("s_1^2=\\frac{\\sum_{i=1}^kSSD_{(i)}}{\\sum_{i=1}^kf_{(i)}}=`c$jointVariance`"))
         html("Og har 95%-konfidensintervallet:")
         eq(interpolate("C_{0.95}(\\sigma^2)=\\bigg[\\frac{f_1s_1^2}{\\chi_{1-\\alpha/2}^2(f_1)} \\ , \\ \\frac{f_1s_1^2}{\\chi_{\\alpha/2}^2(f_1)}\\bigg]
-            =[`c$cLVarLower`, `c$cLVarUpper`]"))
+            = [`c$cLVarLower`, `c$cLVarUpper`]"))
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
     }
 
     html("<h2>Tester hypotese om ens middelværdi</h2>")
-    html("frihedsgraderne beregnes")
-    eq(int("\\bar{f} = \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } \\right )^2 }{ \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } \\right )^2 }{ f_{(1)} } + \\frac{ \\left ( \\frac{ s^2_{(2)} }{ n_2 }\\right )^2 }{ f_{(2)} }  } = `c$fBar`"))
-    html("t-teststørrelsen er")
-    eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+    if (hasCommonVariance) {
+        fName = "f_1"
+        eq(int("f_1 = f_{(1)} + f_{(2)} = `c$f`"))
+        html("t-teststørrelsen er")
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2.}{\\sqrt{ s_1^2 \\frac{1}{n_1} + \\frac{1}{n_2}}} = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+    } else {
+        fName = "\\bar{f}"
+        html("frihedsgraderne beregnes")
+        eq(int("\\bar{f} = \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } \\right )^2 }{ \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } \\right )^2 }{ f_{(1)} } + \\frac{ \\left ( \\frac{ s^2_{(2)} }{ n_2 }\\right )^2 }{ f_{(2)} }  } = `c$fBar`"))
+        html("t-teststørrelsen er")
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+    }
     html("Testsandsynligheden beregnes som")
     eq(int("p_{obs}(x) = 2 \\left(1 - F_{t(\\bar{f})}\\left(\\lvert t(x)\\rvert\\right) \\right) = `c$tpObs`"));
     if (c$tpObs > 0.05) {
@@ -430,6 +460,14 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles middelværdi.")
     }
+    html("Den estimerede spredning på $ \\bar{x_1}. - \\bar{x_2}. $ er")
+    eq(int("StdError(\\bar{x_1}. - \\bar{x_2}.) = \\sqrt{s_{(1)}^2 / n_1 + s_{(2)}^2 / n_2} = `c$meanDiffStdError`"))
+    align(int("c_{95}(\\mu_1 - \\mu_2)
+&= \\bar{x_1}. - \\bar{x_2}. \\pm t_{0.975}(\\bar{f}) StdError(\\bar{x_1}. - \\bar{x_2}.) \\\\
+&= `c$mean1` - `c$mean2` \\pm `c$meanDifft975` \\cdot `c$meanDiffStdError` \\\\
+&= `c$mean1 - c$mean2` \\pm `c$meanDiffDelta` \\\\
+&= [`c$meanDiffStart`, `c$meanDiffEnd`]
+"))
 }
 
 matrixMap <- function(f, m) {

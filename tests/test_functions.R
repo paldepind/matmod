@@ -24,6 +24,15 @@ describe("test hypothesis about mean", {
     })
 })
 
+describe("two observations", {
+    it("gives confidence interval for difference between mean", {
+        ## Data from example 2.5 from page 85
+        result = twoObservations(16, 44.915, 142.626517, 15, 40.731, 124.933851)
+        expectRoughlyEqual(result$meanDiffStart, -0.6666)
+        expectRoughlyEqual(result$meanDiffEnd, 0.8502)
+    })
+})
+
 describe("kObservations", {
     observations = list(obs1 = list(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288),
                         obs2 = list(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272),
