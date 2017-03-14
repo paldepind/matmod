@@ -107,6 +107,19 @@ describe("linearRegressionEstimates", {
     it("calculates C95AlphaEnd", {
         expect_equal(resultsObl$C95AlphaEnd, 88.11, tolerance = 0.005)
     })
+    it("can estimate based on a hypothesis about beta", {
+        ## Data from Summer 2015.1
+        res = linearRegressionBetaHypothesis(
+            n = 20, Sx = 120.622, USSx = 742.121606, St = 108.068,
+            USSt = 596.990072, SPxt = 664.381658, betaGuess = 1
+        )
+        expectRoughlyEqual(res$newAlphaEstimate, 0.6277)
+        expectRoughlyEqual(res$s_03, 0.1299)
+        expectRoughlyEqual(res$newC95AlphaStart, 0.4590)
+        expectRoughlyEqual(res$newC95AlphaEnd, 0.7964)
+        expectRoughlyEqual(res$s_03Start, 0.075)
+        expectRoughlyEqual(res$s_03End, 0.2771)
+    })
 })
 
 describe("fTest", {

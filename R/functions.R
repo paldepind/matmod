@@ -250,6 +250,8 @@ betaDistribution = "N(\\beta, \\frac{\\sigma^2}{SSD_t})"
 
 printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     c = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt);
+    html("Model for lineær regression")
+    eq(int("M: X_i \\sim N(\\alpha + \\beta t_i, \\sigma^2), \\quad i = 1, \\dots, n "))
     eq(int("n = `n`"))
     eq(int("S_x = `Sx`"))
     eq(int("S_t = `St`"))
@@ -265,12 +267,45 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("\\hat{\\alpha} = \\frac{S_x - \\hat{\\beta} S_t}{n} = \\frac{`Sx` - `c$betaEstimate` \\cdot `St`}{`n`} = `c$alphaEstimate` \\sim\\sim `betaDistribution`"))
     eq(int("t_{0.975}(n - 2) = `c$t975`"))
     eq(int("SSD_{02} = SSD_x - \\frac{SPD_{xt}^2}{SSD_t} = `c$SSDx` - \\frac{`c$SPDxt`^2}{`c$SSDt`} = `c$SSD02`"))
+    html("estimat for varians")
     eq(int("s_{02}^2 = \\frac{SSD_{02}}{n - 2} = `c$s02` \\sim\\sim \\sigma^2 \\chi^2(f_{02})/f_{02}"))
     eq(int("StdError(\\hat{\\beta})  = \\sqrt{\\frac{s_{02}^2}{SSD_t}} = `c$stdErrorBeta`"))
     eq(int("StdError(\\hat{\\alpha}) = \\sqrt{s_{02}^2 \\cdot \\left(\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t}\\right)} = `c$stdErrorAlpha`"))
 
     eq(int("C_{95}(\\beta) = \\hat{\\beta} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\beta}) = `c$betaEstimate` \\mp `c$t975*c$stdErrorBeta` = [`c$C95BetaStart`; `c$C95BetaEnd`]"))
     eq(int("C_{95}(\\alpha) = \\hat{\\alpha} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\alpha}) = `c$alphaEstimate` \\mp `c$t975*c$stdErrorAlpha` = [`c$C95AlphaStart`; `c$C95AlphaEnd`]"))
+}
+
+## You have a linear model and you want to test \beta = \beta_0
+linearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGuess) {
+    res = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt)
+    ## Stuff from page 139
+    t = (res$betaEstimate - betaGuess) / sqrt(res$s02 / res$SSDt)
+    p_obs = 2 * (1 - pt(abs(t), n - 2))
+    newAlphaEstimate = res$xMean - betaGuess * res$tMean
+    s_03 = (1 / (n - 1)) * (res$SSD02 + (res$betaEstimate - betaGuess)^2 * res$SSDt)
+
+    ## This is WRONG! I cannot figure out how to find confidence
+    ## intervals for s_03 and newAlphaEstimate
+    stdErrorAlpha = sqrt(res$s02 * (1 / n + res$tMean^2 / res$SSDt))
+    t975 = qt(0.975, n - 1)
+    newC95AlphaStart = newAlphaEstimate - t975 * stdErrorAlpha
+    newC95AlphaEnd   = newAlphaEstimate + t975 * stdErrorAlpha
+    s_03Start = s_03
+    s_03End = s_03
+
+    return(list(
+        t = t, p_obs = p_obs, newAlphaEstimate = newAlphaEstimate, s_03 = s_03,
+        newC95AlphaStart = newC95AlphaStart, newC95AlphaEnd = newC95AlphaEnd,
+        s_03Start = s_03Start, s_03End = s_03End
+    ))
+}
+
+printLinearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGuess) {
+    res1 = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt)
+    res2 = linearRegressionBetaHypothesis(n, Sx, St, USSx, USSt, SPxt, betaGuess)
+    eq(int("\\alpha <- \\hat{\\alpha}_{M_3} = \\bar{x}. - \\beta_0 \\bar{t}. = `res2$newAlphaEstimate`"))
+    eq(int("\\sigma^2 <- s_{03}^2 = \\frac{1}{n - 1}(SSD_{02} + (\\hat{\\beta} - \\beta_0)^2 SSD_t) = `res2$s_03`"))
 }
 
 fTest <- function(n, k, SSD1, SSD02) {
@@ -327,7 +362,7 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     mean1 = S1 / n1
     mean2 = S2 / n2
 
-    # F-test 
+    # F-test
     minVariance = min(variance1, variance2)
     maxVariance = max(variance1, variance2)
     F = maxVariance / minVariance
@@ -360,7 +395,7 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
     eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
-    
+
     html("<h2>Tester hypotese om ens varians</h2>")
     html("F-teststørrelsen er")
     eq(int("F = \\frac{\\max(s_{(1)}^2, s_{(2)}^2)}{\\min(s_{(1)}^2, s_{(2)}^2)} = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
