@@ -13,7 +13,7 @@ html <- function(...) display_html(paste(...))
 eq <- function(...)
     display_latex(gsub("~", "\\sim", gsub("<-", "\\leftarrow", paste("$", ..., "$"), fixed = TRUE), fixed = TRUE))
 align <- function(...)
-    display_latex(gsub("<-", "\\leftarrow", paste("\\begin{align*}", ..., "\\end{align*}"), fixed = TRUE))
+    display_latex(gsub("~", "\\sim", gsub("<-", "\\leftarrow", paste("\\begin{align*}", ..., "\\end{align*}"), fixed = TRUE), fixed = TRUE))
 
 calcSSD <- function(n, USS, S) {
     return (USS - S^2 / n) # sum of squares of deviations
@@ -368,13 +368,13 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     mean1 = S1 / n1
     mean2 = S2 / n2
 
-    # F-test
+    ## F-test
     minVariance = min(variance1, variance2)
     maxVariance = max(variance1, variance2)
     F = maxVariance / minVariance
     FpObs = 2 * (1 - pf(F, fNume, fDeno))
-    # t-test
 
+    ## t-test
     hasCommonVariance = FpObs > 0.05
     fBar = (((variance1 / n1) + (variance2 / n2))^2) / ( ((variance1 / n1)^2 / f1) + ((variance2 / n2)^2 / f2) )
     fSum = f1+f2 # f_1
@@ -417,15 +417,16 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("f_{(2)} = n_2 - 1 = `c$f2`"))
     eq(int("SSD_{(1)} = USS_1 - \\frac{S_1^2}{n_1} = `c$SSD1`"))
     eq(int("SSD_{(2)} = USS_2 - \\frac{S_2^2}{n_2} = `c$SSD2`"))
-    eq(int("s_{(1)}^2 = \\frac{SSD_{(1)}}{f_{(1)}} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
-    eq(int("s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
-    eq(int("\\bar{x_1}. = \\frac{S_1}{n_1} = `c$mean1`"))
-    eq(int("\\bar{x_2}. = \\frac{S_2}{n_2} = `c$mean2`"))
+    eq(int("\\sigma_1^2 <- s_{(1)}^2 = \\frac{SSD_{(1)}}{f_{(1)}} = \\frac{`c$SSD1`}{`c$f1`} = `c$variance1`"))
+    eq(int("\\sigma_2^2 <- s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
+    eq(int("\\mu_1 <- \\bar{x}_1. = \\frac{S_1}{n_1} = `c$mean1`"))
+    eq(int("\\mu_2 <- \\bar{x}_2. = \\frac{S_2}{n_2} = `c$mean2`"))
     eq(int("\\bar{x_1}. - \\bar{x_2}. = `c$mean1` - `c$mean2` = `c$mean1 - c$mean2`"))
 
     html("<h2>Tester hypotese om ens varians</h2>")
+    html("Vi laver F-test for hypotesen: $ H_{0,\\sigma^2}: \\sigma_1^2 = \\sigma_2^2 = \\sigma $")
     html("F-teststørrelsen er")
-    eq(int("F = \\frac{\\max(s_{(1)}^2, s_{(2)}^2)}{\\min(s_{(1)}^2, s_{(2)}^2)} = \\frac{`c$maxVariance`}{`c$minVariance`} = `c$F` \\sim\\sim F(`c$fNume`, `c$fDeno`)"))
+    align(int("F &= \\frac{\\max(s_{(1)}^2, s_{(2)}^2)}{\\min(s_{(1)}^2, s_{(2)}^2)} = \\frac{`c$maxVariance`}{`c$minVariance`} \\\\ &= `c$F` ~~ F(`c$fNume`, `c$fDeno`)"))
     html("Testsandsynligheden beregnes som")
     eq(int("p_{obs}(x) = 2 (1 - F_{F(`c$fNume`, `c$fDeno`)}(`c$F`)) = `c$FpObs`"));
     hasCommonVariance = c$FpObs > 0.05
@@ -441,17 +442,18 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     }
 
     html("<h2>Tester hypotese om ens middelværdi</h2>")
+    html("Vi laver en $t$-test for at teste hypotesen: $ H_{0\\mu}: \\mu_1 = \\mu_2 = \\mu $")
     if (hasCommonVariance) {
         fName = "f_1"
         eq(int("f_1 = f_{(1)} + f_{(2)} = `c$f`"))
         html("t-teststørrelsen er")
-        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2.}{\\sqrt{ s_1^2 \\frac{1}{n_1} + \\frac{1}{n_2}}} = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2.}{\\sqrt{ s_1^2 \\frac{1}{n_1} + \\frac{1}{n_2}}} = `c$tTestsize` ~~ t(`c$fBar`)"))
     } else {
         fName = "\\bar{f}"
         html("frihedsgraderne beregnes")
         eq(int("\\bar{f} = \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } \\right )^2 }{ \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } \\right )^2 }{ f_{(1)} } + \\frac{ \\left ( \\frac{ s^2_{(2)} }{ n_2 }\\right )^2 }{ f_{(2)} }  } = `c$fBar`"))
         html("t-teststørrelsen er")
-        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` \\sim \\sim t(`c$fBar`)"))
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` ~ ~ t(`c$fBar`)"))
     }
     html("Testsandsynligheden beregnes som")
     eq(int("p_{obs}(x) = 2 \\left(1 - F_{t(\\bar{f})}\\left(\\lvert t(x)\\rvert\\right) \\right) = `c$tpObs`"));
