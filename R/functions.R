@@ -110,6 +110,8 @@ printStandardCalculations <- function(obs) {
     printSingleObservation(observation(c$n, c$S, c$USS))
 }
 
+
+
 calcC <- function(dataList) {
     k = length(dataList)
     f1 = Sum(Map(function(data) data$f, dataList))
@@ -316,7 +318,7 @@ printLinearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, bet
     eq(int("\\sigma^2 <- s_{03}^2 = \\frac{1}{n - 1}(SSD_{02} + (\\hat{\\beta} - \\beta_0)^2 SSD_t) = `res2$s_03`"))
 }
 
-fTest <- function(n, k, SSD1, SSD02) {
+testLinearRegression <- function(n, k, SSD1, SSD02) {
     ## f-test
     f02 = n - 2
     ## SSD1 = Sum(SDDi)
@@ -331,7 +333,7 @@ fTest <- function(n, k, SSD1, SSD02) {
                 Fx = Fx, pObs = pObs, testResult = testResult))
 }
 
-printFTest <- function(n, k, SSD1, SSD02) {
+printTestLinearRegression <- function(n, k, SSD1, SSD02) {
     c = fTest(n, k, SSD1, SSD02)
     html("<h2>Tester hypotese om lineær regression</h2>")
     eq("H_{02}: \\mu_i = \\alpha + \\beta t_i, \\quad i = 1, \\dots , k")
@@ -566,6 +568,106 @@ printTestHomogeneity <- function(data) {
         html("Vi har defor nu kun én $ \\pmb{\\pi} $.")
         ## display_html(r$x.)
         printPiInfo(r$x.)
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}
+
+# Bartletts-test fra slides uge 5
+calcCBartlettsTest <- function(fList) {
+    k = length(fList)
+    f1 = Sum(fList)
+    C = 1 + (Sum(Map(function(fi) 1 / fi, fList)) - (1 / f1)) / (3 * (k - 1))
+    eq(int("C = 1 + \\frac{ 1 }{ 3(k - 1) } \\left( \\left( \\sum\\limits_{i=1}^{k} \\frac{ 1 }{ f_{(i)}} \\right) - \\frac{ 1 }{ f_1 }  \\right) = `C`"))
+    return(C)
+}
+
+calcMinus2LnQx <- function(fList, sList) {
+    f1 = Sum(fList)
+    s1 = Sum(mapply("*", fList, sList)) / f1
+    minus2LnQx = f1 * log(s1) - Sum(mapply(function(fi, si) fi * log(si), fList, sList))
+    eq(int("-2\\ln Q(x) = f_1 \\ln s_1 - \\sum\\limits_{i=1}^k f_{(i)} \\ln s_{(i)}^2  = `minus2LnQx`"))
+    return(minus2LnQx)
+}
+
+calcBartlettsTestsize <- function(C, minus2LnQx) {
+    Ba = minus2LnQx / C
+    eq(int("Ba = \\frac{ -2 \\ln Q(x) }{ C } = `Ba`"))
+    return (Ba)
+}
+
+calcBartlettsTest <- function(Ba, k) {
+    pObs = 1 - pchisq(Ba, k - 1)
+    eq(int("p_{obs}(x) = 1 - F_{\\chi^2(k-1)}(Ba) = `pObs`"))
+    return(pObs)
+}
+
+bartlettsTest <- function(fList, sList,
+                          k = length(fList),
+                          C = calcCBartlettsTest(fList),
+                          minus2LnQx = calcMinus2LnQx(fList, sList),
+                          Ba = calcBartlettsTestsize(C, minus2LnQx)
+                          ) {
+    html("<h2> Bartletts test </h2>")
+    pObs = calcBartlettsTest(Ba, k)
+    if (pObs > 0.05) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}
+
+# F-test til-og-fra-formlen slides uge 9
+calcFTestsizeFromTo <- function(SSD0from, f0from, s0from, SSD0to, f0to) {
+    F = (((SSD0to - SSD0from) / (f0to - f0from)) / s0from)
+    eq(int("F = \\frac{ SSD_{0til} - SSD_{0fra} }{ \\frac{ f_{0til} - f_{0fra} }{ s^2_{0fra} } } = `F` \\sim \\sim F(`f0to - f0from`, `f0from`)"))
+    return(F)
+}
+
+calcFTestFromTo <- function(F, f0from, f0to) {
+    pObs = 1 - pf(F, f0to - f0from, f0from)
+    eq(int("p_{obs}(x) = 1 - F_{ F(f_{0til} - f_{0fra}, f_{0fra}) } = `pObs`"))
+    return(pObs)
+}
+
+fTestFromTo <- function(SSD0from, f0from, s0from, SSD0to, f0to,
+                        F = calcFTestsizeFromTo(SSD0from, f0from, s0from, SSD0to, f0to)
+) {
+    html("<h2>F-test (til og fra formlen) </h2>")
+    pObs = calcFTestFromTo(F, f0from, f0to)
+    if (pObs > 0.05) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}
+
+# F-test
+calcFTestsize <- function(s1, s2) {
+    s_max = max(s1, s2)
+    s_min = min(s1, s2)
+    F = s_max / s_min
+    eq(int("F = \\frac{ \\max( s^2_{(1)}, s^2_{(2)} ) }{ \\min( s^2_{(1)}, s^2_{(2)} ) } = `F`"))
+    return (F)
+}
+
+calcFTest <- function(F, fNume, fDeno) {
+    pObs = if (F < 1 ) 2 * (pf(F, fNume, fDeno)) else 2 * (1 - pf(F, fNume, fDeno))
+    eq(int("p_{obs}(x) = \\begin{cases}
+2F_{( f_{s^2_{max}}, f_{s^2_{min}} )}(F)        & \\text{hvis } F < 1       \\\\
+2 \\left(1 - F_{( f_{s^2_{max}}, f_{s^2_{min}} )}(F) \\right)  & \\text{hvis } F \\geq 1
+        \\end{cases}  = `pObs`"))
+    return(pObs)
+}
+
+fTest <- function(s1, s2, f1, f2,
+                  F = calcFTestsize(s1, s2)
+                  ) {
+    fNume = if (s1 > s2) f1 else f2
+    fDeno = if (s1 <= s2) f2 else f1
+    pObs = calcFTest(F, fNume, fDeno)
+    if (pObs > 0.05) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
     } else {
         html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
     }
