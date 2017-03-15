@@ -31,6 +31,13 @@ describe("two observations", {
         expectRoughlyEqual(result$meanDiffStart, -0.6666)
         expectRoughlyEqual(result$meanDiffEnd, 0.8502)
     })
+    it("tests common mean", {
+        ## Data from exam 15.1
+        result = twoObservations(n1 = 41, n2 = 41, S1 = 162.593, S2 = 175.014,
+                                 USS1 = 657.028740, USS2 = 763.754248)
+        expectRoughlyEqual(result$tTestsize, -2.28)
+        expectRoughlyEqual(result$tpObs, 0.0252)
+    })
 })
 
 describe("kObservations", {

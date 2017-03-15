@@ -385,7 +385,7 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
 
     if (hasCommonVariance) {
         f = fSum # f_1
-        tTestsize = (mean1 - mean2) / sqrt(jointVariance * (1 / n1 ) + (1 / n2))
+        tTestsize = (mean1 - mean2) / sqrt(jointVariance * ((1 / n1 ) + (1 / n2)))
         meanDiffStdError = sqrt(jointVariance * ((1 / n1) + (1 / n2)))
     } else {
         f = fBar # Use \bar{f}
@@ -421,7 +421,7 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     eq(int("\\sigma_2^2 <- s_{(2)}^2 = \\frac{SSD_{(2)}}{f_{(2)}} = \\frac{`c$SSD2`}{`c$f2`} = `c$variance2`"))
     eq(int("\\mu_1 <- \\bar{x}_1. = \\frac{S_1}{n_1} = `c$mean1`"))
     eq(int("\\mu_2 <- \\bar{x}_2. = \\frac{S_2}{n_2} = `c$mean2`"))
-    eq(int("\\bar{x_1}. - \\bar{x_2}. = `c$mean1` - `c$mean2` = `c$mean1 - c$mean2`"))
+    align(int("\\mu_1 - \\mu_2 <- \\bar{x_1}. - \\bar{x_2}. &= `c$mean1` - `c$mean2`\\\\ &= `c$mean1 - c$mean2`"))
 
     html("<h2>Tester hypotese om ens varians</h2>")
     html("Vi laver F-test for hypotesen: $ H_{0,\\sigma^2}: \\sigma_1^2 = \\sigma_2^2 = \\sigma $")
@@ -433,9 +433,9 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     if (hasCommonVariance) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles varians <b>ikke</b> forkastes.")
         html("Den fælles varians er da:")
-        eq(int("s_1^2=\\frac{\\sum_{i=1}^kSSD_{(i)}}{\\sum_{i=1}^kf_{(i)}}=`c$jointVariance`"))
+        eq(int("\\sigma^2 <- s_1^2=\\frac{\\sum_{i=1}^kSSD_{(i)}}{\\sum_{i=1}^kf_{(i)}}=`c$jointVariance` ~~ \\sigma^2\\chi^2(`c$f`)/`c$f`"))
         html("Og har 95%-konfidensintervallet:")
-        eq(interpolate("C_{0.95}(\\sigma^2)=\\bigg[\\frac{f_1s_1^2}{\\chi_{1-\\alpha/2}^2(f_1)} \\ , \\ \\frac{f_1s_1^2}{\\chi_{\\alpha/2}^2(f_1)}\\bigg]
+        eq(int("C_{0.95}(\\sigma^2)=\\bigg[\\frac{f_1s_1^2}{\\chi_{1-\\alpha/2}^2(f_1)} \\ , \\ \\frac{f_1s_1^2}{\\chi_{\\alpha/2}^2(f_1)}\\bigg]
             = [`c$cLVarLower`, `c$cLVarUpper`]"))
     } else {
         html("Da $p_{obs}$ er mindre end $0.05$ <b>forkastes</b> hypotesen om fælles varians.")
@@ -447,16 +447,16 @@ printTwoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
         fName = "f_1"
         eq(int("f_1 = f_{(1)} + f_{(2)} = `c$f`"))
         html("t-teststørrelsen er")
-        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2.}{\\sqrt{ s_1^2 \\frac{1}{n_1} + \\frac{1}{n_2}}} = `c$tTestsize` ~~ t(`c$fBar`)"))
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2.}{\\sqrt{ s_1^2 \\frac{1}{n_1} + \\frac{1}{n_2}}} = `c$tTestsize` ~~ t(`c$f`)"))
     } else {
         fName = "\\bar{f}"
         html("frihedsgraderne beregnes")
         eq(int("\\bar{f} = \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } \\right )^2 }{ \\frac{ \\left ( \\frac{ s^2_{(1)} }{ n_1 } \\right )^2 }{ f_{(1)} } + \\frac{ \\left ( \\frac{ s^2_{(2)} }{ n_2 }\\right )^2 }{ f_{(2)} }  } = `c$fBar`"))
         html("t-teststørrelsen er")
-        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` ~ ~ t(`c$fBar`)"))
+        eq(int("t(x) = \\frac{ \\bar{x}_1. - \\bar{x}_2. }{ \\sqrt{ \\frac{ s^2_{(1)} }{ n_1 } + \\frac{ s^2_{(2)} }{ n_2 } } } = `c$tTestsize` ~ ~ t(`c$f`)"))
     }
     html("Testsandsynligheden beregnes som")
-    eq(int("p_{obs}(x) = 2 \\left(1 - F_{t(\\bar{f})}\\left(\\lvert t(x)\\rvert\\right) \\right) = `c$tpObs`"));
+    eq(int("p_{obs}(x) = 2 \\left(1 - F_{t(`fName`)}\\left(\\lvert t(x)\\rvert\\right) \\right) = `c$tpObs`"));
     if (c$tpObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen om fælles middelværdi <b>ikke</b> forkastes.")
     } else {
