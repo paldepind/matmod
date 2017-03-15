@@ -381,7 +381,7 @@ twoObservations <- function(n1, S1, USS1, n2, S2, USS2) {
     ## t-test
     hasCommonVariance = FpObs > 0.05
     fBar = (((variance1 / n1) + (variance2 / n2))^2) / ( ((variance1 / n1)^2 / f1) + ((variance2 / n2)^2 / f2) )
-    fSum = f1+f2 # f_1
+    fSum = f1 + f2 # f_1
     jointVariance = (SSD1 + SSD2) / (f1 + f2) # s_1^2
 
     cLVarLower <- (fSum * jointVariance) / qchisq(0.975, fSum);
@@ -586,7 +586,7 @@ calcMinus2LnQx <- function(fList, sList) {
     f1 = Sum(fList)
     s1 = Sum(mapply("*", fList, sList)) / f1
     minus2LnQx = f1 * log(s1) - Sum(mapply(function(fi, si) fi * log(si), fList, sList))
-    eq(int("-2\\ln Q(x) = f_1 \\ln s_1 - \\sum\\limits_{i=1}^k f_{(i)} \\ln s_{(i)}^2  = `minus2LnQx`"))
+    eq(int("-2\\ln Q(x) = f_1 \\ln s^2_1 - \\sum\\limits_{i=1}^k f_{(i)} \\ln s_{(i)}^2  = `minus2LnQx`"))
     return(minus2LnQx)
 }
 
@@ -643,15 +643,22 @@ fTestFromTo <- function(SSD0from, f0from, s0from, SSD0to, f0to,
 }
 
 # F-test
-calcFTestsize <- function(s1, s2) {
+calcFTestsize <- function(s1, s2, f1, f2) {
     s_max = max(s1, s2)
     s_min = min(s1, s2)
+    if (s1 > s2){
+        fNume = f1
+        fDeno = f2
+    } else {
+        fNume = f2
+        fDeno = f1
+    }
     F = s_max / s_min
-    eq(int("F = \\frac{ \\max( s^2_{(1)}, s^2_{(2)} ) }{ \\min( s^2_{(1)}, s^2_{(2)} ) } = `F`"))
+    eq(int("F = \\frac{ \\max( s^2_{(1)}, s^2_{(2)} ) }{ \\min( s^2_{(1)}, s^2_{(2)} ) } = `F` \\sim \\sim F(`fNume`, `fDeno`)"))
     return (F)
 }
 
-calcFTest <- function(F, fNume, fDeno) {
+calcFTest2Samples <- function(F, fNume, fDeno) {
     pObs = if (F < 1 ) 2 * (pf(F, fNume, fDeno)) else 2 * (1 - pf(F, fNume, fDeno))
     eq(int("p_{obs}(x) = \\begin{cases}
 2F_{( f_{s^2_{max}}, f_{s^2_{min}} )}(F)        & \\text{hvis } F < 1       \\\\
@@ -660,12 +667,56 @@ calcFTest <- function(F, fNume, fDeno) {
     return(pObs)
 }
 
-fTest <- function(s1, s2, f1, f2,
-                  F = calcFTestsize(s1, s2)
+fTest2Samples <- function(s1, s2, f1, f2,
+                  F = calcFTestsize(s1, s2, f1, f2)
                   ) {
-    fNume = if (s1 > s2) f1 else f2
-    fDeno = if (s1 <= s2) f2 else f1
+    if (s1 > s2){
+        fNume = f1
+        fDeno = f2
+    } else {
+        fNume = f2
+        fDeno = f1
+    }
     pObs = calcFTest(F, fNume, fDeno)
+    if (pObs > 0.05) {
+        html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
+    } else {
+        html("Da $p_{obs}(x)$ er mindre end $0.05$ <b>forkastes</b> hypotesen.")
+    }
+}
+
+calcVariance1 <- function(SSD, f) {
+    variance = SSD / f
+    eq(int("s_1^2 = \\frac{SSD_1}{f_1} = `variance`"))
+    return(variance)
+}
+
+calcVariance2 <- function(SSD, f) {
+    variance = SSD / f
+    eq(int("s_2^2 = \\frac{SSD_2}{f_2} = `variance`"))
+    return(variance)
+}
+
+calcFTest <- function(F, fNume, fDeno) {
+    pObs = 1 - pf(F, fNume, fDeno)
+    eq(int("p_{obs}(x) = 1 - F_{( `fNume`, `fDeno` )}(F) = `pObs`"))
+    return(pObs)
+}
+
+fTest <- function(s1 = calcVariance1(SSD1, f1),
+                                  s2 = calcVariance2(SSD2, f2),
+                                  f1 = n - k,
+                                  f2 = k - 2,
+                                  F = calcFTestsize(s1, s2, f1, f2),
+                                  k,
+                                  n,
+                                  SSD1,
+                                  SSD2 = SSD02 - SSD1,
+                                  SSD02,
+                                  fNume = if (s1 > s2) f1 else f2,
+                                  fDeno = if (s1 > s2) f2 else f1
+                                  ) {
+    pObs = calcFTestLinearRegression(F, fNume, fDeno)
     if (pObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
     } else {

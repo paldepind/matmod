@@ -171,12 +171,14 @@ describe("multinomial distributions", {
     })
 })
 
-describe("F-test", {
+describe("F-test 2 Samples", {
     it("should calculate F testsize", {
         # taget fra slides uge 3
         s1 = 1.102779
         s2 = 1.023778
-        F = calcFTestsize(s1, s2)
+        f1 = 15
+        f2 = 14
+        F = calcFTestsize(s1, s2, f1, f2)
         expectRoughlyEqual(F, 1.077)
     })
 
@@ -185,8 +187,29 @@ describe("F-test", {
         F = 1.077
         f1 = 15
         f2 = 14
-        pObs = calcFTest(F, f1, f2)
+        pObs = calcFTest2Samples(F, f1, f2)
         expectRoughlyEqual(pObs, 0.894)
+    })
+})
+
+describe("F-test k Samples", {
+    it("should calculate F testsize", {
+        # taget fra bogen side 103
+        s1 = 895.340
+        s2 = 19212.122
+        f1 = 3
+        f2 = 48
+        F = calcFTestsize(s1, s2, f1, f2)
+        expectRoughlyEqual(F, 21.46)
+    })
+
+    it("should calculate pObs", {
+        # taget fra bogen side 103
+        F = 21.46
+        f1 = 3
+        f2 = 48
+        pObs = calcFTest(F, f1, f2)
+        expectRoughlyEqual(pObs, 0.000000006)
     })
 })
 
