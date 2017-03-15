@@ -314,7 +314,10 @@ linearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGues
 printLinearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGuess) {
     res1 = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt)
     res2 = linearRegressionBetaHypothesis(n, Sx, St, USSx, USSt, SPxt, betaGuess)
+    eq(int("t(x)=\\frac{\\hat{\\beta}-\\beta_0}{\\sqrt{s_{02}^2/SSD_t}} ~~ t(n-2)=\\frac{`res1$betaEstimate`-`betaGuess`}{\\sqrt{`res1$s02`/`res1$SSDt`}} ~~ t(`n`-2) = `res2$t` ~~ t(`n-2`)"))
+    eq(int("p_{obs}(x)=2(1-F_{t(n-2)}(|t(x)|))=2(1-F_{t(`n`-2)}(`abs(res2$t)`))=`res2$p_obs`"))
     eq(int("\\alpha <- \\hat{\\alpha}_{M_3} = \\bar{x}. - \\beta_0 \\bar{t}. = `res2$newAlphaEstimate`"))
+    eq(int("See page 131 for confidence intervals"))
     eq(int("\\sigma^2 <- s_{03}^2 = \\frac{1}{n - 1}(SSD_{02} + (\\hat{\\beta} - \\beta_0)^2 SSD_t) = `res2$s_03`"))
 }
 
