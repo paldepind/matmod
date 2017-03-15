@@ -123,28 +123,19 @@ describe("linearRegressionEstimates", {
     it("calculates C95AlphaEnd", {
         expect_equal(resultsObl$C95AlphaEnd, 88.11, tolerance = 0.005)
     })
-    it("can estimate based on a hypothesis about beta", {
-        ## Data from Summer 2015.1
-        res = linearRegressionBetaHypothesis(
-            n = 20, Sx = 120.622, USSx = 742.121606, St = 108.068,
-            USSt = 596.990072, SPxt = 664.381658, betaGuess = 1
-        )
-        expectRoughlyEqual(res$newAlphaEstimate, 0.6277)
-        expectRoughlyEqual(res$s_03, 0.1299)
-        expectRoughlyEqual(res$newC95AlphaStart, 0.4590)
-        expectRoughlyEqual(res$newC95AlphaEnd, 0.7964)
-        expectRoughlyEqual(res$s_03Start, 0.075)
-        expectRoughlyEqual(res$s_03End, 0.2771)
-    })
-})
-
-describe("fTest", {
-    ## Data fra side 137 - 138
-    result = fTest(12, 3, 0.0182, 0.023416)
-    expect_equal(result$variance1, 0.00202, tolerance = 0.005)
-    expect_equal(result$variance2, 0.0052, tolerance = 0.005)
-    expect_equal(result$Fx, 2.57, tolerance = 0.005)
-    expect_equal(result$pObs, 0.14, tolerance = 0.005)
+    ## it("can estimate based on a hypothesis about beta", {
+    ##     ## Data from Summer 2015.1
+    ##     res = linearRegressionBetaHypothesis(
+    ##         n = 20, Sx = 120.622, USSx = 742.121606, St = 108.068,
+    ##         USSt = 596.990072, SPxt = 664.381658, betaGuess = 1
+    ##     )
+    ##     expectRoughlyEqual(res$newAlphaEstimate, 0.6277)
+    ##     expectRoughlyEqual(res$s_03, 0.1299)
+    ##     expectRoughlyEqual(res$newC95AlphaStart, 0.4590)
+    ##     expectRoughlyEqual(res$newC95AlphaEnd, 0.7964)
+    ##     expectRoughlyEqual(res$s_03Start, 0.075)
+    ##     expectRoughlyEqual(res$s_03End, 0.2771)
+    ## })
 })
 
 describe("multinomial distributions", {
@@ -177,5 +168,72 @@ describe("multinomial distributions", {
         result = testHomogeneity(data)
         expectRoughlyEqual(result$twoLnQ, 3.129)
         expectRoughlyEqual(result$p_obs, 0.209)
+    })
+})
+
+describe("F-test", {
+    it("should calculate F testsize", {
+        # taget fra slides uge 3
+        s1 = 1.102779
+        s2 = 1.023778
+        F = calcFTestsize(s1, s2)
+        expectRoughlyEqual(F, 1.077)
+    })
+
+    it("should calculate pObs", {
+        # taget fra slides uge 3
+        F = 1.077
+        f1 = 15
+        f2 = 14
+        pObs = calcFTest(F, f1, f2)
+        expectRoughlyEqual(pObs, 0.894)
+    })
+})
+
+describe("F-test - from-and-to-formular", {
+    it("should calculate F testsize", {
+        # taget fra slides uge 9
+        SSD0from = 452.892448
+        SSD0to = 845.972201
+        s0from = 18.115698
+        f0from = 25
+        f0to = 26
+        F = calcFTestsizeFromTo(SSD0from, f0from, s0from, SSD0to, f0to)
+        expectRoughlyEqual(F, 21.70)
+    })
+
+    it("should calculate pObs", {
+        # taget fra slides uge 9
+        F = 21.70
+        f0from = 25
+        f0to = 26
+        pObs = calcFTestFromTo(F, f0from, f0to)
+        expectRoughlyEqual(pObs, 0.000090)
+    })
+})
+
+describe("Bartletts test", {
+
+    it("should calculate C constant'", {
+        # taget fra bogen s. 99
+        fList = list(12,12,12,12)
+        C = calcCBartlettsTest(fList)
+        expectRoughlyEqual(C, 1.03472)
+    })
+
+    it("should calculate -2 ln Q(x)'", {
+        # taget fra bogen s. 99
+        fList = list(12, 12, 12, 12)
+        sList = list(730.231, 884.910, 724.910, 1241.308)
+        minus2LnQx = calcMinus2LnQx(fList, sList)
+        expectRoughlyEqual(minus2LnQx, 1.1999)
+    })
+
+    it("should calculate Ba testsize", {
+        # taget fra slides uge 5
+        C = 1.03472
+        minus2LnQx = 1.1999
+        Ba = calcBartlettsTestsize(C, minus2LnQx)
+        expectRoughlyEqual(Ba, 1.160)
     })
 })

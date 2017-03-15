@@ -573,7 +573,7 @@ printTestHomogeneity <- function(data) {
     }
 }
 
-# Bartletts-test
+# Bartletts-test fra slides uge 5
 calcCBartlettsTest <- function(fList) {
     k = length(fList)
     f1 = Sum(fList)
@@ -617,9 +617,9 @@ bartlettsTest <- function(fList, sList,
     }
 }
 
-# F-test til-og-fra-formlen
+# F-test til-og-fra-formlen slides uge 9
 calcFTestsizeFromTo <- function(SSD0from, f0from, s0from, SSD0to, f0to) {
-    F = ((SSD0to - SSD0from) / (f0to - f0from) / s0from)
+    F = (((SSD0to - SSD0from) / (f0to - f0from)) / s0from)
     eq(int("F = \\frac{ SSD_{0til} - SSD_{0fra} }{ \\frac{ f_{0til} - f_{0fra} }{ s^2_{0fra} } } = `F` \\sim \\sim F(`f0to - f0from`, `f0from`)"))
     return(F)
 }
