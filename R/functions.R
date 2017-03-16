@@ -714,19 +714,19 @@ calcFTest <- function(F, fNume, fDeno) {
 }
 
 fTest <- function(s1 = calcVariance1(SSD1, f1),
-                                  s2 = calcVariance2(SSD2, f2),
-                                  f1 = n - k,
-                                  f2 = k - 2,
-                                  F = calcFTestsize(s1, s2, f1, f2),
-                                  k,
-                                  n,
-                                  SSD1,
-                                  SSD2 = SSD02 - SSD1,
-                                  SSD02,
-                                  fNume = if (s1 > s2) f1 else f2,
-                                  fDeno = if (s1 > s2) f2 else f1
-                                  ) {
-    pObs = calcFTestLinearRegression(F, fNume, fDeno)
+                  s2 = calcVariance2(SSD2, f2),
+                  f1 = n - k,
+                  f2 = k - 2,
+                  F = calcFTestsize(s1, s2, f1, f2),
+                  k,
+                  n,
+                  SSD1,
+                  SSD2 = SSD02 - SSD1,
+                  SSD02,
+                  fNume = if (s1 > s2) f1 else f2,
+                  fDeno = if (s1 > s2) f2 else f1
+                  ) {
+    pObs = calcFTest(F, fNume, fDeno)
     if (pObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
     } else {
