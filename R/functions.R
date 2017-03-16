@@ -286,6 +286,13 @@ printLinearRegressionEstimates <- function(n, Sx, St, USSx, USSt, SPxt) {
     eq(int("C_{95}(\\alpha) = \\hat{\\alpha} \\mp t_{0.975}(n - 2) \\cdot StdError (\\hat{\\alpha}) = `c$alphaEstimate` \\mp `c$t975*c$stdErrorAlpha` = [`c$C95AlphaStart`; `c$C95AlphaEnd`]"))
 }
 
+varianceConfidenceInterval <- function(varianceEstimate, f) {
+    return(list(
+        lower = varianceEstimate / ((qchisq(0.975, f) / f)),
+        upper = varianceEstimate / ((qchisq(0.025, f) / f))
+    ))
+}
+
 ## You have a linear model and you want to test \beta = \beta_0
 linearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGuess) {
     res = linearRegressionEstimates(n, Sx, St, USSx, USSt, SPxt)
@@ -295,19 +302,16 @@ linearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, betaGues
     newAlphaEstimate = res$xMean - betaGuess * res$tMean
     s_03 = (1 / (n - 1)) * (res$SSD02 + (res$betaEstimate - betaGuess)^2 * res$SSDt)
 
-    ## This is WRONG! I cannot figure out how to find confidence
-    ## intervals for s_03 and newAlphaEstimate
-    stdErrorAlpha = sqrt(res$s02 * (1 / n + res$tMean^2 / res$SSDt))
+    stdErrorAlpha = sqrt(s_03 / n)
     t975 = qt(0.975, n - 1)
+    varianceInterval = varianceConfidenceInterval(s_03, n - 1)
     newC95AlphaStart = newAlphaEstimate - t975 * stdErrorAlpha
-    newC95AlphaEnd   = newAlphaEstimate + t975 * stdErrorAlpha
-    s_03Start = s_03
-    s_03End = s_03
+    newC95AlphaEnd = newAlphaEstimate + t975 * stdErrorAlpha
 
     return(list(
         t = t, p_obs = p_obs, newAlphaEstimate = newAlphaEstimate, s_03 = s_03,
         newC95AlphaStart = newC95AlphaStart, newC95AlphaEnd = newC95AlphaEnd,
-        s_03Start = s_03Start, s_03End = s_03End
+        varianceInterval = varianceInterval
     ))
 }
 
@@ -316,9 +320,12 @@ printLinearRegressionBetaHypothesis <- function(n, Sx, St, USSx, USSt, SPxt, bet
     res2 = linearRegressionBetaHypothesis(n, Sx, St, USSx, USSt, SPxt, betaGuess)
     eq(int("t(x)=\\frac{\\hat{\\beta}-\\beta_0}{\\sqrt{s_{02}^2/SSD_t}} ~~ t(n-2)=\\frac{`res1$betaEstimate`-`betaGuess`}{\\sqrt{`res1$s02`/`res1$SSDt`}} ~~ t(`n`-2) = `res2$t` ~~ t(`n-2`)"))
     eq(int("p_{obs}(x)=2(1-F_{t(n-2)}(|t(x)|))=2(1-F_{t(`n`-2)}(`abs(res2$t)`))=`res2$p_obs`"))
-    eq(int("\\alpha <- \\hat{\\alpha}_{M_3} = \\bar{x}. - \\beta_0 \\bar{t}. = `res2$newAlphaEstimate`"))
-    eq(int("See page 131 for confidence intervals"))
-    eq(int("\\sigma^2 <- s_{03}^2 = \\frac{1}{n - 1}(SSD_{02} + (\\hat{\\beta} - \\beta_0)^2 SSD_t) = `res2$s_03`"))
+    eq(int("\\sigma^2 <- s_{03}^2 = \\frac{1}{n - 1}(SSD_{02} + (\\hat{\\beta} - \\beta_0)^2 SSD_t) = `res2$s_03` ~~ \\sigma^2 \\chi^2(n-1)/(n-1)"))
+    eq(int("\\alpha <- \\hat{\\alpha}_{M_3} = \\bar{x}. - \\beta_0 \\bar{t}. = `res2$newAlphaEstimate` ~~ N(\\alpha, \\frac{\\sigma^2}{n})"))
+    align(int("c_{95}(\\alpha) &= \\hat{\\alpha} \\mp \\sqrt{s_{03}^2 (\\frac{1}{n} + \\frac{\\bar{t}.^2}{SSD_t})} \\cdot t_{0.975}(n - 1) \\\\
+&= `res2$newAlphaEstimate` \\mp \\sqrt{`res2$s_03` (\\frac{1}{`n`} + \\frac{`res1 $tMean`^2}{`res1$SSDt`})} \\cdot t_{0.975}(`n - 1`) \\\\
+&= [`res2$newC95AlphaStart`, `res2$newC95AlphaEnd`]"))
+    align(int("c_{95}(\\sigma^2) = [`res2$varianceInterval$lower`, `res2$varianceInterval$upper`]"))
 }
 
 testLinearRegression <- function(n, k, SSD1, SSD02) {
