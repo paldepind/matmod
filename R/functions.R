@@ -86,7 +86,7 @@ c_{95}(\\mu) &= [\\bar{x.} - \\sqrt{\\frac{s^2}{n}}\\cdot t_{0.975}(f), \\bar{x.
     html("Konfidensinterval for $\\sigma^2$")
     eq(int("c_{95}(\\sigma^2) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`obs$varianceLower`, `obs$varianceUpper`]"))
     html("Konfidensinterval for $\\sigma$ (spredning)")
-    eq(int("c_{95}(\\sigma) = [\\frac{f s^2}{\\chi^2_{0.975}(f)}, \\frac{f s^2}{\\chi^2_{0.025}(f)}] = [`sqrt(obs$varianceLower)`, `sqrt(obs$varianceUpper)`]"))
+    eq(int("c_{95}(\\sigma) = [\\sqrt{\\frac{f s^2}{\\chi^2_{0.975}(f)}}, \\sqrt{\\frac{f s^2}{\\chi^2_{0.025}(f)}}] = [`sqrt(obs$varianceLower)`, `sqrt(obs$varianceUpper)`]"))
 }
 
 # t-testsize
@@ -705,7 +705,6 @@ calcFTest <- function(F, fNume, fDeno) {
     eq(int("p_{obs}(x) = 1 - F_{( `fNume`, `fDeno` )}(F) = `pObs`"))
     return(pObs)
 }
-
 
 fTest <- function(s1 = calcVariance1(SSD1, f1),
                                   s2 = calcVariance2(SSD2, f2),
