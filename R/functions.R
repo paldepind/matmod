@@ -687,7 +687,7 @@ fTest2Samples <- function(s1, s2, f1, f2,
         fNume = f2
         fDeno = f1
     }
-    pObs = calcFTest(F, fNume, fDeno)
+    pObs = calcFTest2Samples(F, fNume, fDeno)
     if (pObs > 0.05) {
         html("Da $p_{obs}(x)$ er større end $0.05$ kan hypotesen <b>ikke</b> forkastes.")
     } else {
@@ -712,6 +712,7 @@ calcFTest <- function(F, fNume, fDeno) {
     eq(int("p_{obs}(x) = 1 - F_{( `fNume`, `fDeno` )}(F) = `pObs`"))
     return(pObs)
 }
+
 
 fTest <- function(s1 = calcVariance1(SSD1, f1),
                                   s2 = calcVariance2(SSD2, f2),
