@@ -41,7 +41,7 @@ observation <- function(n, S, USS) {
 testMeanHypothesis <- function(obs, testMean) {
     tTestSize = t(obs$mean, testMean, obs$variance, obs$n)
     p_obs = 2 * (1 - pt(tTestSize, obs$f))
-    conclusion = p_obs > 0.005
+    conclusion = p_obs > 0.05
     return(list(
         tTestSize = tTestSize, p_obs = p_obs, conclusion = conclusion
     ))
